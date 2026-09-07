@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<!-- Portfolio Website -->
+<html lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Anurag Singh, AI/ML Engineer, Portfolio Website</title>
+	<script>
+		// Pre-render: pick a random landing background so the browser starts
+		// fetching it immediately during HTML parse (before any rendering).
+		// Order can be set by editing window.__landingImages below; index 0 is the
+		// "leading" image, used as the SSR/no-JS fallback in CSS.
+		(function () {
+			// Use WebP if supported (modern browsers), else JPG.
+			var supportsWebP = (function () {
+				var c = document.createElement("canvas");
+				if (!c.getContext || !c.getContext("2d")) return false;
+				return c.toDataURL("image/webp").indexOf("data:image/webp") === 0;
+			})();
+			var ext = supportsWebP ? "webp" : "jpg";
+	var imgs = [
+			{ src: "images/hero7.png", pos: "center 46%" },
+			{ src: "images/hero7.jpg", pos: "center 5%" },
+			{ src: "images/hero7.jpg", pos: "center 35%" }
+		];
+			var idx = 0; // Always start with the first image (beach)
+			var s = document.createElement("style");
+			s.textContent = "#landing-bg-a{background-image:url(\"" + imgs[idx].src + "\");background-position:" + imgs[idx].pos + ";opacity:1;}";
+			document.head.appendChild(s);
+			// Hint the browser to prioritise this fetch.
+			var l = document.createElement("link");
+			l.rel = "preload"; l.as = "image"; l.href = imgs[idx].src; l.fetchPriority = "high";
+			document.head.appendChild(l);
+			window.__landingImages = imgs;
+			window.__landingInitialIdx = idx;
+		})();
+	</script>
+	<style>
+		#landing-bg-a {
+			background-image: url("images/hero7.jpg");
+			background-position: center 46%;
+			opacity: 1;
+		}
+	</style>
+	<meta name="author" content="Anurag Singh">
+	<!-- SEO + social cards -->
+	<meta name="description"
+		content="Anurag Singh is an AI/ML Engineer specializing in NLP, deep learning, transformer fine-tuning, and RAG pipelines.">
+	<meta name="keywords"
+		content="Anurag Singh, AI/ML Engineer, NLP, Deep Learning, RAG, Transformer Fine-Tuning, Python">
+	<meta property="og:title" content="Anurag Singh — AI/ML Engineer">
+	<meta property="og:description" content="Building applied NLP, deep-learning, and RAG systems.">
+	<meta property="og:type" content="profile">
+	<meta property="og:url" content="">
+	<meta property="og:image" content="">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="630">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Anurag Singh — AI/ML Engineer">
+	<meta name="twitter:description" content="Building applied NLP, deep-learning, and RAG systems.">
+	<meta name="twitter:image" content="">
+	<meta name="theme-color" content="#267d66">
+
+
+	<!-- Favicon -->
+
+
+	<!-- Stylesheets -->
+	<link rel="stylesheet" type="text/css" href="./images/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="./all.min.css">
+	<link rel="stylesheet" type="text/css" href="./main.css">
+
+	<!-- JSON-LD structured data -->
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "Person",
+			"name": "Anurag Singh",
+			"jobTitle": "AI/ML Engineer",
+			"alumniOf": [
+				{
+					"@type": "CollegeOrUniversity",
+					"name": "Shri Mata Vaishno Devi University",
+					"url": "https://www.smvdu.ac.in/"
+				}
+			],
+			"knowsAbout": [
+				"Machine Learning",
+				"Natural Language Processing",
+				"Deep Learning",
+				"Retrieval-Augmented Generation",
+				"Transformer Fine-Tuning",
+				"PyTorch",
+				"JAX"
+			],
+			"award": [
+				"Smart India Hackathon 2025 Finalist",
+				"AI Club Co-Lead, SMVDU"
+			]
+		}
+		</script>
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div class="row" id="landing-container">
+		<div class="landing-bg landing-bg-a" id="landing-bg-a" aria-hidden="true"
+			style="opacity: 0; background-image: url(&quot;images/hero7.jpg&quot;); background-position: center 46%;">
+		</div>
+		<div class="landing-bg landing-bg-b" id="landing-bg-b" aria-hidden="true"
+			style="background-image: url(&quot;images/hero7.jpg&quot;); background-position: center 5%; opacity: 1;">
+		</div>
+			<div class="landing-overlay" aria-hidden="true"></div>
+			<div class="container landing-content" id="landing-header">
+				<h1 id="heading-name" style="opacity: 1;">Anurag Singh</h1>
+				<h3 id="heading-title" style="opacity: 1;">
+					<span class="heading-line">AI/ML Engineer</span>
+					<span class="heading-subtitle">Natural Language Processing · Deep Learning</span>
+				</h3>
+			</div>
+			<div class="container landing-content" id="landing-footer" style="opacity: 1;">
+				<button type="button" id="landing-chevron-btn" aria-label="Scroll to content">
+					<i class="fas fa-chevron-down" id="landing-chevron" aria-hidden="true"></i>
+				</button>
+			</div>
+		</div>
+		<div class="row" id="details-container">
+			<div class="col-2">
+				<nav class="sticky-top" id="side-nav" aria-label="Section navigation">
+					<div class="row side-nav-picture">
+						<picture>
+							<img class="avatar" src="./images/Avatar__.png" alt="Portrait of Anurag Singh">
+						</picture>
+						<h2>Anurag Singh</h2>
+					</div>
+					<a href="#about" class="nav-active">
+						<div class="row side-nav-element">
+							<div class="row">
+								<div class="col-3"><i class="fas fa-user"></i></div>
+								<div class="col nav-label">About</div>
+							</div>
+							<div class="row">
+								<div class="underbar"></div>
+							</div>
+						</div>
+					</a>
+			<a href="#journey" class="">
+				<div class="row side-nav-element">
+					<div class="row">
+						<div class="col-3"><i class="fas fa-briefcase"></i></div>
+						<div class="col nav-label">Journey</div>
+					</div>
+					<div class="row">
+						<div class="underbar"></div>
+					</div>
+				</div>
+			</a>
+			<a href="#projects" class="">
+				<div class="row side-nav-element">
+					<div class="row">
+						<div class="col-3"><i class="fas fa-laptop-code"></i></div>
+						<div class="col nav-label">Projects</div>
+					</div>
+					<div class="row">
+						<div class="underbar"></div>
+					</div>
+				</div>
+			</a>
+				<a href="#skills" class="">
+					<div class="row side-nav-element">
+						<div class="row">
+							<div class="col-3"><i class="fas fa-chart-bar"></i></div>
+							<div class="col nav-label">Skills</div>
+						</div>
+						<div class="row">
+							<div class="underbar"></div>
+						</div>
+					</div>
+				</a>
+				<a href="#recognition" class="">
+					<div class="row side-nav-element">
+						<div class="row">
+							<div class="col-3"><i class="fas fa-star"></i></div>
+							<div class="col nav-label">Recognition</div>
+						</div>
+						<div class="row">
+							<div class="underbar"></div>
+						</div>
+					</div>
+				</a>
+				<div class="row justify-content-center" id="availability">
+						<p>Open to AI/ML &amp; NLP Engineering opportunities</p>
+					</div>
+					<div class="row justify-content-center" id="contact-icons-container">
+						<div class="col-3 contact-icon">
+							<a href="./Anurag_Singh_Resume.pdf" target="_blank" rel="noopener"
+								aria-label="View my resume (PDF)" data-tooltip="View my resume (PDF)">
+								<img id="resume-icon" src="./images/resume.svg" alt="Resume">
+							</a>
+						</div>
+						<div class="col-3 contact-icon">
+							<a href="mailto:anuragsingh.eu@gmail.com" aria-label="Email Anurag Singh"
+								data-tooltip="Send me an email to start a conversation">
+								<i class="fas fa-envelope"></i>
+							</a>
+						</div>
+						<div class="col-3 contact-icon">
+							<a href="https://www.linkedin.com/in/anu-env/" target="_blank" rel="noopener"
+								aria-label="Connect on LinkedIn" data-tooltip="Send me a connect on LinkedIn">
+								<i class="icon fab fa-linkedin"></i>
+							</a>
+						</div>
+						<div class="col-3 contact-icon">
+							<a href="https://github.com/anurag-env" target="_blank" rel="noopener"
+								aria-label="View my GitHub profile" data-tooltip="View my GitHub profile">
+								<i class="icon fab fa-github"></i>
+							</a>
+						</div>
+					</div>
+				</nav>
+			</div>
+			<main class="col" id="main-content" tabindex="-1">
+				<div class="main-content-element" id="about">
+					<h2>Hi, I'm Anurag <span class="wave">👋🏻</span></h2>
+
+				<p>AI/ML Engineer with a first-author paper accepted at NLPIR 2026 (Springer), specializing in Natural Language Processing, Deep Learning, transformer
+					fine-tuning,
+					and retrieval-augmented generation (RAG). I am pursuing a B.Tech in Computer Science and
+					Engineering
+					at <a href="https://www.smvdu.ac.in/" target="_blank" rel="noopener">Shri Mata Vaishno Devi
+						University</a>.</p>
+					<div id="hobbies">
+						<h3>I work with…</h3>
+						<div class="row hobby-row">
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Natural Language Processing"
+								data-tooltip="Natural Language Processing">
+								<span class="hobby-helper"></span><img loading="lazy" src="./images/books.svg"
+									width="55" alt="">
+							</div>
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Deep Learning"
+								data-tooltip="Deep Learning">
+								<span class="hobby-helper"></span><img loading="lazy" src="./images/dance.svg"
+									width="40" alt="">
+							</div>
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Python development"
+								data-tooltip="Python development">
+								<span class="hobby-helper"></span><img loading="lazy" src="./images/keyboard.svg"
+									width="50" alt="">
+							</div>
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="RAG pipelines"
+								data-tooltip="RAG pipelines">
+								<span class="hobby-helper"></span><img loading="lazy" src="./images/travel.svg"
+									width="65" alt="">
+							</div>
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Applied AI research"
+								data-tooltip="Applied AI research">
+								<span class="hobby-helper"></span><i class="fas fa-theater-masks hobby-fa-icon"
+									aria-hidden="true"></i>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="main-content-element" id="journey">
+					<h1>Journey</h1>
+					<ol class="timeline">
+						<li class="tl-item">
+							<div class="tl-marker" aria-hidden="true"><i class="fas fa-briefcase"></i></div>
+							<div class="tl-card">
+								<div class="tl-header"><img loading="lazy" class="tl-logo" src="./images/edu.png"
+										alt="Eduspheria">
+									<div class="tl-headings">
+										<div class="tl-org">Eduspheria</div>
+										<div class="tl-role">Software Development Intern · Remote</div>
+									</div>
+									<div class="tl-date">Apr 2026 – Present</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>Integrated AI features into Saksham, a 97K-LOC, 60+ page React 18 platform:
+										DALL·E 3 poster generation, AI question-paper generation, and a WebSocket
+										conversational assistant.</li>
+									<li>Implemented role-based access control across six user roles and consumed 30+
+										Django REST Framework endpoints with token authentication.</li>
+									<li>Designed five-plus gamified learning exercises and integrated 100+ PhET
+										simulations with TTS narration for Grades 5–12.</li>
+								</ul>
+							</div>
+						</li>
+						<li class="tl-item">
+							<div class="tl-marker" aria-hidden="true"><i class="fas fa-briefcase"></i></div>
+							<div class="tl-card">
+								<div class="tl-header"><img loading="lazy" class="tl-logo" src="./images/freelance.jpg"
+										alt="Independent">
+									<div class="tl-headings">
+										<div class="tl-org">Independent</div>
+										<div class="tl-role">Freelance Software &amp; AI Engineer · Remote</div>
+									</div>
+									<div class="tl-date">Dec 2023 – Present</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>Delivered client AI/ML, NLP, and RAG solutions using LLM APIs, embeddings,
+										vector databases, and end-to-end machine-learning workflows.</li>
+									<li>Built backend and web applications with Python, Django, Django REST Framework,
+										Node.js, REST APIs, and SQL/PostgreSQL.</li>
+									<li>Conducted dataset preparation, preprocessing, model implementation, evaluation,
+										and technical documentation for client deliverables.</li>
+								</ul>
+							</div>
+						</li>
+						<li class="tl-item">
+							<div class="tl-marker tl-marker-edu" aria-hidden="true"><i
+									class="fas fa-graduation-cap"></i></div>
+							<div class="tl-card tl-card-edu">
+								<div class="tl-header"><img loading="lazy" class="tl-logo" src="./images/college.webp"
+										alt="Shri Mata Vaishno Devi University">
+									<div class="tl-headings">
+										<div class="tl-org">Shri Mata Vaishno Devi University</div>
+										<div class="tl-role">B.Tech, Computer Science and Engineering</div>
+									</div>
+									<div class="tl-date">Aug 2023 – May 2027</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>CGPA: 7.5/10 through Semester 6.</li>
+									<li>Coursework: Deep Learning, Natural Language Processing, Machine Learning, and
+										Data Structures &amp; Algorithms.</li>
+								</ul>
+							</div>
+						</li>
+					</ol>
+					<!-- Previous portfolio timeline retained only as source markup; hidden while the resume-based timeline above is shown.
+					<ol class="timeline">
+						<li class="tl-item">
+							<div class="tl-marker" aria-hidden="true"><i class="fas fa-briefcase"></i></div>
+							<div class="tl-card">
+								<div class="tl-header">
+									<img loading="lazy" class="tl-logo" src="./images/apple.png" alt="Apple">
+									<div class="tl-headings">
+										<div class="tl-org">Apple</div>
+										<div class="tl-role">Machine Learning Engineer, Apple Foundation Models</div>
+									</div>
+									<div class="tl-date">Jan 2023 – Present</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>Core contributor to Apple Foundation Models, the key framework behind Apple
+										Intelligence experiences. Enables 60+ product teams (Siri, Messages, Photos,
+										Accessibility) to ship on-device and server-side AI with performant models and
+										infrastructure.</li>
+									<li>Developed and publicly released Apple's custom ML library, <a
+											href="https://pypi.org/project/tamm/" target="_blank"
+											rel="noopener"><code>tamm</code></a>, on PyPI, empowering App Store
+										developers to build AI features in their own apps using Apple's on-device
+										foundation model. Strengthens privacy-preserving AI across the App Store
+										ecosystem, which generates over $1.3 trillion in developer billings and sales.
+									</li>
+									<li>Led development of a model publishing library that sits in the critical pathway
+										for shipping on-device and server models to millions of devices globally.</li>
+									<li>Designed and productionized a novel model publication and evaluation system,
+										streamlining pre-deployment validation across on-device and server models.</li>
+									<li>Developed a high-performance, vLLM-based inference engine for serving
+										multi-modal foundation models (150B+ parameters); integrated Ray for
+										auto-scaling, load balancing, and fault tolerance to maximize GPU utilization
+										and minimize downtime.</li>
+									<li>Accelerated AI development by reducing model deployment time from several days
+										of manual work to minutes via single-click execution, saving thousands of
+										engineering hours annually.</li>
+								</ul>
+							</div>
+						</li>
+						<li class="tl-item">
+							<div class="tl-marker tl-marker-edu" aria-hidden="true"><i
+									class="fas fa-graduation-cap"></i></div>
+							<div class="tl-card tl-card-edu">
+								<div class="tl-header">
+									<img loading="lazy" class="tl-logo" src="./images/uw.png"
+										alt="University of Wisconsin-Madison">
+									<div class="tl-headings">
+										<div class="tl-org">University of Wisconsin-Madison</div>
+										<div class="tl-role">Master of Science in Computer Sciences</div>
+									</div>
+									<div class="tl-date">Sep 2021 – Dec 2022</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>Research: Domain Adaptation and cross-lingual transfer for NLP with Prof. Junjie
+										Hu; self-supervised video pre-training with masked autoencoders under Prof. Yin
+										Li.</li>
+									<li>Teaching assistant for Machine Learning, Intro to Artificial Intelligence, and
+										Foundations of Data Science.</li>
+									<li>Coursework: Advanced Deep Learning, Advanced Natural Language Processing,
+										Machine Learning, Deep Learning for Visual Recognition.</li>
+								</ul>
+							</div>
+						</li>
+						<li class="tl-item">
+							<div class="tl-marker" aria-hidden="true"><i class="fas fa-briefcase"></i></div>
+							<div class="tl-card">
+								<div class="tl-header">
+									<img loading="lazy" class="tl-logo" src="./images/apple.png" alt="Apple">
+									<div class="tl-headings">
+										<div class="tl-org">Apple</div>
+										<div class="tl-role">Machine Learning Engineer Intern, Machine Learning
+											Platforms</div>
+									</div>
+									<div class="tl-date">May 2022 – Sep 2022</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>Integrated the T5 large language model, then state-of-the-art for text-to-text
+										problems, into Apple's internal ML flow tooling so developers across the company
+										could apply it via a simple YAML config.</li>
+								</ul>
+							</div>
+						</li>
+						<li class="tl-item">
+							<div class="tl-marker" aria-hidden="true"><i class="fas fa-briefcase"></i></div>
+							<div class="tl-card">
+								<div class="tl-header">
+									<img loading="lazy" class="tl-logo" src="./As22_files/apple.png" alt="Apple">
+									<div class="tl-headings">
+										<div class="tl-org">Apple</div>
+										<div class="tl-role">Software Engineer, Global Business Intelligence</div>
+									</div>
+									<div class="tl-date">Jul 2019 – Aug 2021</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>Redesigned Apple Retail's big-data analytics pipelines (Teradata to a
+										schema-less Spark + AWS S3 architecture) so compute and storage could scale
+										independently. Achieved a 90% reduction in operational costs and handled 100x
+										traffic spikes during Apple's New Product Introductions without disruption.</li>
+									<li>Engineered recovery automations that reduced system downtime from over 4 hours
+										to under 1 minute, safeguarding global retail data operations.</li>
+									<li>Implemented retrieval-augmented (contextual embeddings) search to improve
+										article retrieval for AppleCare advisors.</li>
+								</ul>
+							</div>
+						</li>
+						<li class="tl-item">
+							<div class="tl-marker" aria-hidden="true"><i class="fas fa-briefcase"></i></div>
+							<div class="tl-card">
+								<div class="tl-header">
+									<img loading="lazy" class="tl-logo" src="./images/amazon-logo.png" alt="Amazon">
+									<div class="tl-headings">
+										<div class="tl-org">Amazon</div>
+										<div class="tl-role">Machine Learning Engineer Intern, Consumer Behavior
+											Analytics</div>
+									</div>
+									<div class="tl-date">Jan 2019 – Jul 2019</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>Partnered with research scientists to productionize a Machine Learning
+										Attribution model that guides the apportionment of Amazon's $10B+ advertising
+										budget across channels.</li>
+									<li>Implemented the snapshot creation and featurization modules to process 1B+
+										records per day, scaling to handle sales and holiday-season traffic spikes.</li>
+									<li>Optimized the machine learning pipeline, reducing the attribution model's
+										execution time by 75%.</li>
+								</ul>
+							</div>
+						</li>
+						<li class="tl-item">
+							<div class="tl-marker tl-marker-edu" aria-hidden="true"><i
+									class="fas fa-graduation-cap"></i></div>
+							<div class="tl-card tl-card-edu">
+								<div class="tl-header">
+									<img loading="lazy" class="tl-logo" src="./images/bits.png" alt="BITS Pilani">
+									<div class="tl-headings">
+										<div class="tl-org">BITS Pilani</div>
+										<div class="tl-role">Bachelor of Engineering in Computer Science</div>
+									</div>
+									<div class="tl-date">Aug 2015 – Jan 2019</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>Coursework: Information Retrieval, Optimization, Artificial Intelligence, Data
+										Mining, Data Structures, Fuzzy Logic, Probability and Statistics, Advanced
+										Calculus &amp; Algorithms.</li>
+									<li>Thesis: Code smell prediction using machine learning.</li>
+								</ul>
+							</div>
+						</li>
+						<li class="tl-item">
+							<div class="tl-marker" aria-hidden="true"><i class="fas fa-briefcase"></i></div>
+							<div class="tl-card">
+								<div class="tl-header">
+									<img loading="lazy" class="tl-logo" src="./images/amazon-logo.png" alt="Amazon">
+									<div class="tl-headings">
+										<div class="tl-org">Amazon</div>
+										<div class="tl-role">Software Development Engineer Intern, Automated Advertising
+										</div>
+									</div>
+									<div class="tl-date">May 2018 – Aug 2018</div>
+								</div>
+								<ul class="tl-bullets">
+									<li>Built a logger plugin to aggregate and write Amazon's ads performance data from
+										Meta, X, Pinterest, and other vendors to AWS S3, enabling metrics reporting and
+										anomaly-detection features.</li>
+									<li>Improved customer trust and reduced ticket volume by bringing transparency to
+										anomaly data through a user-friendly dashboard for marketing managers.</li>
+								</ul>
+							</div>
+						</li>
+					</ol> -->
+				</div>
+				<div class="row main-content-element" id="projects">
+					<h1>Projects</h1>
+					<div class="projects-grid">
+						<details class="project-card">
+							<summary><span class="project-icon"><img loading="lazy" src="./images/sql.jpg"
+										alt=""></span><span class="project-summary"><span
+										class="project-eyebrow">Generative AI</span><span class="project-title">NL2SQL:
+										Text-to-SQL Model</span><span class="project-outcome">Natural language to SQL
+										generation with T5-small</span><span class="project-stack"><a class="tech-tag"
+											href="https://www.python.org/" target="_blank" rel="noopener">Python</a><a
+											class="tech-tag"
+											href="https://huggingface.co/docs/transformers/model_doc/t5" target="_blank"
+											rel="noopener">T5</a><a class="tech-tag"
+											href="https://huggingface.co/docs/peft/" target="_blank"
+											rel="noopener">QLoRA</a><a class="tech-tag"
+											href="https://github.com/salesforce/WikiSQL" target="_blank"
+											rel="noopener">WikiSQL</a></span><span
+										class="project-metrics"><span><b>80K+</b><small>query
+												pairs</small></span><span><b>4GB</b><small>VRAM
+												budget</small></span></span></span><a class="project-github"
+									href="https://github.com/anurag-env" target="_blank" rel="noopener"
+									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
+										class="fab fa-github" aria-hidden="true"></i></a><i
+									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+							<div class="project-details">
+								<p>Fine-tuned T5-small for text-to-SQL generation on WikiSQL, using QLoRA to keep
+									training within a 4GB VRAM budget.</p>
+							</div>
+						</details>
+						<details class="project-card">
+							<summary><span class="project-icon"><img loading="lazy" src="./images/pragya1.jpg"
+										alt=""></span><span class="project-summary"><span
+										class="project-eyebrow">RAG</span><span class="project-title">Pragya: Local RAG
+										Research Assistant</span><span class="project-outcome">Local research assistance
+										with CPU-friendly retrieval</span><span class="project-stack"><a
+											class="tech-tag" href="https://www.llama.com/" target="_blank"
+											rel="noopener">Llama3</a><a class="tech-tag"
+											href="https://www.trychroma.com/" target="_blank"
+											rel="noopener">ChromaDB</a><a class="tech-tag"
+											href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2"
+											target="_blank" rel="noopener">MiniLM</a><a class="tech-tag"
+											href="https://streamlit.io/" target="_blank"
+											rel="noopener">Streamlit</a></span><span
+										class="project-metrics"><span><b>&lt;400ms</b><small>mean
+												latency</small></span><span><b>0</b><small>cloud
+												services</small></span></span></span><a class="project-github"
+									href="https://github.com/anurag-env" target="_blank" rel="noopener"
+									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
+										class="fab fa-github" aria-hidden="true"></i></a><i
+									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+							<div class="project-details">
+								<p>Built a fully local, zero-cloud research assistant that translates complex papers for
+									technical and lay audiences. Section-aware PyMuPDF chunking and ChromaDB retrieval
+									improved relevance over naive chunking.</p>
+							</div>
+						</details>
+						<details class="project-card">
+							<summary><span class="project-icon"><img loading="lazy" src="./images/sql.jpg"
+										alt=""></span><span class="project-summary"><span
+										class="project-eyebrow">Generative AI</span><span class="project-title">AI Research Paper Writer</span><span class="project-outcome">Automated research paper generation with LLM pipelines</span><span class="project-stack"><a
+											class="tech-tag" href="https://www.python.org/" target="_blank"
+											rel="noopener">Python</a><a class="tech-tag"
+											href="https://platform.openai.com/" target="_blank"
+											rel="noopener">OpenAI API</a><a class="tech-tag"
+											href="https://www.deepseek.com/" target="_blank"
+											rel="noopener">DeepSeek</a><a class="tech-tag"
+											href="https://quickchart.io/" target="_blank"
+											rel="noopener">QuickChart</a></span><span
+										class="project-metrics"><span><b>10+</b><small>pipeline modules</small></span><span><b>Real-time</b><small>streaming output</small></span></span></span><a class="project-github"
+									href="https://github.com/anurag-env" target="_blank" rel="noopener"
+									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
+										class="fab fa-github" aria-hidden="true"></i></a><i
+									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+							<div class="project-details">
+								<p>Engineered an end-to-end automated research paper generation pipeline producing
+									publication-ready DOCX documents from a single topic input. Designed a modular 10+
+									module NLP pipeline with AI-driven outline generation, section writing, reference
+									synthesis, and automated figure/table generation via QuickChart API.</p>
+							</div>
+						</details>
+						<details class="project-card">
+							<summary><span class="project-icon"><img loading="lazy" src="./images/vault1.jpg"
+										alt=""></span><span class="project-summary"><span
+										class="project-eyebrow">Security</span><span class="project-title">Local Password Manager</span><span class="project-outcome">Fully local, zero-cloud encrypted credential storage</span><span class="project-stack"><a
+											class="tech-tag" href="https://www.electronjs.org/" target="_blank"
+											rel="noopener">Electron</a><a class="tech-tag"
+											href="https://nodejs.org/" target="_blank"
+											rel="noopener">Node.js</a><a class="tech-tag"
+											href="https://www.sqlite.org/" target="_blank"
+											rel="noopener">SQLite</a><a class="tech-tag"
+											href="https://argon2.online/" target="_blank"
+											rel="noopener">Argon2id</a></span><span
+										class="project-metrics"><span><b>AES-256</b><small>encryption</small></span><span><b>0</b><small>network calls</small></span></span></span><a class="project-github"
+									href="https://github.com/anurag-env" target="_blank" rel="noopener"
+									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
+										class="fab fa-github" aria-hidden="true"></i></a><i
+									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+							<div class="project-details">
+								<p>Built a fully local-only password manager using Electron with Argon2id key derivation
+									and AES-256-GCM authenticated encryption. Implemented SQLite with WAL checkpointing
+									for durable storage, designed with strict security architecture: no network calls,
+									no telemetry, minimal attack surface.</p>
+							</div>
+						</details>
+					</div>
+				</div>
+				<div class="row main-content-element" id="skills">
+					<h1>Skills</h1>
+					<div class="skills-grid">
+						<div class="skill-category">
+							<h3 class="skill-category-label">Programming</h3>
+							<div class="skill-pills"><span class="skill-pill"><img loading="lazy"
+										src="./images/Python-logo-notext.svg" alt=""
+										class="skill-icon"><span>Python</span></span><span class="skill-pill"><img
+										loading="lazy" src="./images/java_logo.svg" alt=""
+										class="skill-icon"><span>Java</span></span></span><span class="skill-pill"><img
+										loading="lazy" src="./images/C++_Logo.svg" alt=""
+										class="skill-icon"><span>C++</span></span><span class="skill-pill"><img
+										loading="lazy" src="./images/sql-database.svg" alt=""
+										class="skill-icon"><span>SQL</span></span><span class="skill-pill"><i
+										
+										class="fas fa-code skill-icon-fa" aria-hidden="true"></i><span>Data Structures
+										&amp; Algorithms</span></span></div>
+						</div>
+						<div class="skill-category">
+							<h3 class="skill-category-label">ML / DL</h3>
+							<div class="skill-pills"></span><span
+									class="skill-pill"><i class="fas fa-network-wired skill-icon-fa"
+										aria-hidden="true"></i><span>Deep Learning</span></span><span
+									class="skill-pill"><i class="fas fa-cogs skill-icon-fa"
+										aria-hidden="true"></i><span>MLOps</span></span><span class="skill-pill"><img
+										loading="lazy" src="./images/PyTorch_logo.svg" alt=""
+										class="skill-icon"><span>PyTorch</span></span><span class="skill-pill"><i
+										class="fas fa-chart-line skill-icon-fa"
+										aria-hidden="true"></i><span>Scikit-Learn</span></span><span
+									class="skill-pill"><img loading="lazy" src="./images/huggingface_logo.svg" alt=""
+										class="skill-icon"><span>Hugging Face Transformers</span></span><span
+									class="skill-pill"><i class="fas fa-table skill-icon-fa"
+										aria-hidden="true"></i><span>Pandas</span></span><span class="skill-pill"><i
+										class="fas fa-calculator skill-icon-fa"
+										aria-hidden="true"></i><span>NumPy</span></span><span class="skill-pill"><i
+										class="fas fa-route skill-icon-fa"
+										aria-hidden="true"></i><span>MLflow</span></span><span class="skill-pill"><i
+										class="fas fa-sliders-h skill-icon-fa"
+										aria-hidden="true"></i><span>Optuna</span></span><span class="skill-pill"><i
+										class="fas fa-chart-bar skill-icon-fa"
+										aria-hidden="true"></i><span>TensorBoard</span></span><span
+									class="skill-pill"><i class="fas fa-project-diagram skill-icon-fa"
+										aria-hidden="true"></i><span>torch-geometric (GAT)</span></span></div>
+						</div>
+						<div class="skill-category">
+							<h3 class="skill-category-label">NLP</h3>
+							<div class="skill-pills"><span class="skill-pill"><img loading="lazy"
+										src="./images/huggingface_logo.svg" alt=""
+										class="skill-icon"><span>RoBERTa</span></span><span class="skill-pill"><img
+										loading="lazy" src="./images/huggingface_logo.svg" alt=""
+										class="skill-icon"><span>T5</span></span><span class="skill-pill"><i
+										
+										class="fas fa-eye skill-icon-fa" aria-hidden="true"></i><span>Attention
+										Mechanisms</span></span><span 
+									class="skill-pill"><i class="fas fa-filter skill-icon-fa"
+										aria-hidden="true"></i><span>Text Preprocessing</span></span><span
+									class="skill-pill"><i class="fas fa-balance-scale skill-icon-fa"
+										aria-hidden="true"></i><span>Class-Imbalance Handling</span></span><span
+									class="skill-pill"><i class="fas fa-search skill-icon-fa"
+										aria-hidden="true"></i><span>Explainable AI (SHAP, Captum)</span></span><span
+									class="skill-pill"><i class="fas fa-language skill-icon-fa"
+										aria-hidden="true"></i><span>Multilingual NLP</span></span><span
+									class="skill-pill"><i class="fas fa-volume-up skill-icon-fa"
+										aria-hidden="true"></i><span>Text-to-Speech</span></span></div>
+						</div>
+						<div class="skill-category">
+							<h3 class="skill-category-label">LLM / GenAI</h3>
+							<div class="skill-pills"><span class="skill-pill"><i class="fas fa-magic skill-icon-fa"
+										aria-hidden="true"></i><span>Transformer Fine-Tuning</span></span><span
+									class="skill-pill"><i class="fas fa-plug skill-icon-fa"
+										aria-hidden="true"></i><span>LLM APIs (OpenAI, DeepSeek)</span></span><span
+										
+									class="skill-pill"><i class="fas fa-lightbulb skill-icon-fa"
+										aria-hidden="true"></i><span>Prompt Engineering</span></span><span
+									class="skill-pill"><i class="fas fa-search skill-icon-fa"
+										aria-hidden="true"></i><span>RAG Pipelines</span></span><span
+									class="skill-pill"><i class="fas fa-database skill-icon-fa"
+										aria-hidden="true"></i><span>Vector Databases (ChromaDB)</span></span><span
+									class="skill-pill"><i class="fas fa-compress-arrows-alt skill-icon-fa"
+										aria-hidden="true"></i><span>Embeddings (MiniLM)</span></span></div>
+						</div>
+						<div class="skill-category">
+							<h3 class="skill-category-label">Systems &amp; Infra</h3>
+							<div class="skill-pills"><span class="skill-pill"><img loading="lazy" src="./images/tux.svg"
+										alt="" class="skill-icon"><span>Linux</span></span><span class="skill-pill"><i
+										class="fas fa-microchip skill-icon-fa skill-icon-cuda"
+										aria-hidden="true"></i><span>CUDA</span></span><span class="skill-pill"><img
+										loading="lazy" src="./images/docker.svg" alt=""
+										class="skill-icon"><span>Docker</span></span><span class="skill-pill"><img
+										loading="lazy" src="./images/Git_icon.svg" alt=""
+										class="skill-icon"><span>Git</span></span><span class="skill-pill"><i
+										class="fas fa-server skill-icon-fa"
+										aria-hidden="true"></i><span>FastAPI</span></span><span class="skill-pill"><img
+										loading="lazy" src="./images/aws.svg" alt=""
+										class="skill-icon skill-icon-wide"><span>AWS</span></span></div>
+						</div>
+					</div>
+					<!-- Previous skill list retained only as source markup; hidden while the resume-based skills above are shown.
+					<div class="skills-grid">
+						<div class="skill-category">
+							<h3 class="skill-category-label">Languages</h3>
+							<div class="skill-pills">
+								<span class="skill-pill"><img loading="lazy" src="./images/Python-logo-notext.svg" alt=""
+										class="skill-icon"><span>Python</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/java_logo.svg" alt=""
+										class="skill-icon"><span>Java</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/C++_Logo.svg" alt=""
+										class="skill-icon"><span>C++</span></span>
+								<span class="skill-pill"><i class="fas fa-microchip skill-icon-fa skill-icon-cuda"
+										aria-hidden="true"></i><span>C</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/sql-database.svg" alt=""
+										class="skill-icon"><span>SQL</span></span>
+
+							</div>
+						</div>
+						<div class="skill-category">
+							<h3 class="skill-category-label">Frameworks</h3>
+							<div class="skill-pills">
+								<span class="skill-pill"><img loading="lazy" src="./images/PyTorch_logo.svg" alt=""
+										class="skill-icon"><span>PyTorch</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/jax_logo.svg" alt=""
+										class="skill-icon skill-icon-wide"><span>JAX</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/huggingface_logo.svg"
+										alt="" class="skill-icon"><span>Hugging Face / Transformers</span></span>
+							</div>
+						</div>
+						<div class="skill-category">
+							<h3 class="skill-category-label">ML &amp; Systems</h3>
+							<div class="skill-pills">
+								<span class="skill-pill"><i class="fas fa-brain skill-icon-fa"
+										aria-hidden="true"></i><span>LLMs / Foundation Models</span></span>
+								<span class="skill-pill"><i class="fas fa-bolt skill-icon-fa"
+										aria-hidden="true"></i><span>Inference Optimization</span></span>
+								<span class="skill-pill"><i class="fas fa-sitemap skill-icon-fa"
+										aria-hidden="true"></i><span>Distributed Training &amp; Inference</span></span>
+							</div>
+						</div>
+						<div class="skill-category">
+							<h3 class="skill-category-label">Tools</h3>
+							<div class="skill-pills">
+								<span class="skill-pill"><img loading="lazy" src="./images/Git_icon.svg" alt=""
+										class="skill-icon"><span>Git</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/github.webp" alt=""
+										class="skill-icon"><span>GitHub</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/docker.svg" alt=""
+										class="skill-icon"><span>Docker</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/tux.svg" alt=""
+										class="skill-icon"><span>Linux / Bash</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/wandb.svg" alt=""
+										class="skill-icon"><span>Weights &amp; Biases</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/aws.svg" alt=""
+										class="skill-icon skill-icon-wide"><span>AWS</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/jupyter.svg" alt=""
+										class="skill-icon"><span>Jupyter</span></span>
+								<span class="skill-pill"><img loading="lazy" src="./images/apache_spark-icon.svg"
+										alt="" class="skill-icon"><span>Spark</span></span>
+							</div>
+						</div>
+					</div> -->
+				</div>
+			<div class="row main-content-element" id="recognition">
+				<h1>Recognition</h1>
+				<div class="container">
+					<div class="row">
+						<div class="col-9 achievement-title"><b>Paper Accepted — NLPIR 2026, Springer LNNS</b></div>
+						<div class="col-3 achievement-date">2026</div>
+					</div>
+					<div class="row achievement-content">
+						<p>First-author paper, "RoBERTa-Driven Transformer Framework for Context-Aware Sentiment Classification of Social Media Text,"
+							accepted at the International Conference on Natural Language Processing and Information Retrieval (NLPIR 2026),
+							published in Springer's Lecture Notes in Networks and Systems. <a href="#research">View details <i class="fas fa-arrow-down" style="font-size:0.7em;"></i></a></p>
+					</div>
+				</div>
+				<div class="container">
+					<div class="row">
+						<div class="col-9 achievement-title"><b>Smart India Hackathon 2025 Finalist</b></div>
+						<div class="col-3 achievement-date">2025</div>
+					</div>
+						<div class="row achievement-content">
+							<p>Among 1,360 finalist teams selected from 68,766 nationwide. Built KrishiRakshak, an AI
+								platform for early wheat disease detection that fuses satellite imagery, drone
+								surveillance, and farmer-uploaded leaf images to generate real-time disease-risk maps
+								and predictive advisories.</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>AI Club Co-Lead</b></div>
+							<div class="col-3 achievement-date">SMVDU</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Directing AI initiatives and technical workshops on Deep Learning and Computer Vision for
+								100+ students at Shri Mata Vaishno Devi University.</p>
+						</div>
+					</div>
+					<!-- Previous recognition list retained only as source markup; hidden while the resume-based achievements above are shown.
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>Reviewer, Top AI Venues</b></div>
+							<div class="col-3 achievement-date">2023 to Present</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Reviewed 60+ papers across the field's flagship venues: <i>IEEE Transactions on Big
+									Data</i>, <i>CVPR</i>, <i>ICML</i>, <i>ACL</i>, and <i>KDD</i>.</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>Invited Speaker</b></div>
+							<div class="col-3 achievement-date">2024 – Present</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Selected to speak at venues on topics across foundation models, AI agents, and ML
+								systems. Recent talks include two selected presentations at Apple's Machine Learning
+								Summit 2025 (scalable serving for foundation models, and a PyTorch library for creating
+								and sharing ML models).</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>Senior Member, IEEE</b></div>
+							<div class="col-3 achievement-date">2025</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Awarded the Senior Member grade by the IEEE, held by fewer than 10% of IEEE members
+								worldwide.</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>Distinguished Alumna, BITS Pilani</b></div>
+							<div class="col-3 achievement-date">2024</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Recognized by my alma mater for professional achievement and contributions to the field.
+							</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>Judge, BITSync Startup Showcase</b></div>
+							<div class="col-3 achievement-date">2025</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Served on the judging panel for the BITSync 2025 startup showcase, evaluating startup
+								pitches from BITS Pilani alumni and students.</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>Best Innovation Award, Govt. of India</b></div>
+							<div class="col-3 achievement-date">2018</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Of 64 nationwide finalists in the Smart India Hackathon.</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>National top 16, Miss India Organization</b></div>
+							<div class="col-3 achievement-date">2017</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Received intensive training &amp; grooming from renowned experts from the fashion &amp;
+								glamour fraternity under Campus Princess, Miss India organization.</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>ACM-ICPC, Baylor University</b></div>
+							<div class="col-3 achievement-date">2016</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Ranked 2nd among 54 college teams at the Amritapuri regional contest, advancing as a top
+								team in India's collegiate programming competition.</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>Kishore Vaigyanik Protsahan Yojana (KVPY), Govt. of
+									India</b></div>
+							<div class="col-3 achievement-date">2014</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Top 0.2%, All India Rank 246 from over 135,000 candidates.</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>National Talent Search Examination (NTSE), Govt. of
+									India</b></div>
+							<div class="col-3 achievement-date">2011</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Top 0.05%, All India Rank in the top 500 from over 800,000 candidates.</p>
+						</div>
+					</div> -->
+				</div>
+			</main>
+		</div>
+
+		<div class="row" id="copyright">
+			<div class="col-12">Made with <span id="love">❤️</span> by <span id="footer-name">Anurag Singh</span></div>
+		</div>
+
+
+	</div>
+	<!-- JS -->
+	<script type="text/javascript" src="./jquery.min.js"></script>
+	<script type="text/javascript" src="./bootstrap.min.js"></script>
+	<script type="text/javascript" src="./main.js"></script>
+
+
+
+</body>
+
+</html>
