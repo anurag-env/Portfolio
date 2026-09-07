@@ -504,6 +504,29 @@
 				<div class="row main-content-element" id="projects">
 					<h1>Projects</h1>
 					<div class="projects-grid">
+						<details class="project-card project-card-featured">
+							<summary><span class="project-icon project-icon-featured"><img loading="lazy" src="./images/roberta.jpg"
+										alt="RoBERTa"></span><span class="project-summary"><span
+										class="project-eyebrow">FEATURED · NLP</span><span class="project-title">RoBERTa Sentiment Classification</span><span class="project-outcome">First-author paper on context-aware sentiment classification of social media text using RoBERTa transformers</span><span class="project-stack"><a class="tech-tag"
+											href="https://www.python.org/" target="_blank"
+											rel="noopener">Python</a><a class="tech-tag"
+											href="https://pytorch.org/" target="_blank"
+											rel="noopener">PyTorch</a><a class="tech-tag"
+											href="https://huggingface.co/docs/transformers/" target="_blank"
+											rel="noopener">Hugging Face Transformers</a><a class="tech-tag"
+											href="https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment"
+											target="_blank" rel="noopener">RoBERTa</a><a class="tech-tag"
+											href="https://huggingface.co/docs/optimum/concept_guides/quantization"
+											target="_blank" rel="noopener">AdamW</a></span><span
+										class="project-metrics"><span><b>96%</b><small>accuracy</small></span><span><b>0.95</b><small>macro-F1</small></span><span><b>18K+</b><small>labeled samples</small></span></span></span><a class="project-github"
+									href="https://github.com/anurag-env" target="_blank" rel="noopener"
+									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
+										class="fab fa-github" aria-hidden="true"></i></a><i
+									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+							<div class="project-details">
+								<p>Designed and fine-tuned an end-to-end RoBERTa-based transformer pipeline for 3-class sentiment classification on 18,170 YouTube comments, achieving 96% accuracy and 0.95 macro-F1. Addressed severe class imbalance (62.6% positive vs. 12.9% negative) via weighted cross-entropy loss and label smoothing. Published first-author at NLPIR 2026, Springer LNNS.</p>
+							</div>
+						</details>
 						<details class="project-card">
 							<summary><span class="project-icon"><img loading="lazy" src="./images/sql.jpg"
 										alt=""></span><span class="project-summary"><span
@@ -528,33 +551,6 @@
 							<div class="project-details">
 								<p>Fine-tuned T5-small for text-to-SQL generation on WikiSQL, using QLoRA to keep
 									training within a 4GB VRAM budget.</p>
-							</div>
-						</details>
-						<details class="project-card">
-							<summary><span class="project-icon"><img loading="lazy" src="./images/pragya1.jpg"
-										alt=""></span><span class="project-summary"><span
-										class="project-eyebrow">RAG</span><span class="project-title">Pragya: Local RAG
-										Research Assistant</span><span class="project-outcome">Local research assistance
-										with CPU-friendly retrieval</span><span class="project-stack"><a
-											class="tech-tag" href="https://www.llama.com/" target="_blank"
-											rel="noopener">Llama3</a><a class="tech-tag"
-											href="https://www.trychroma.com/" target="_blank"
-											rel="noopener">ChromaDB</a><a class="tech-tag"
-											href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2"
-											target="_blank" rel="noopener">MiniLM</a><a class="tech-tag"
-											href="https://streamlit.io/" target="_blank"
-											rel="noopener">Streamlit</a></span><span
-										class="project-metrics"><span><b>&lt;400ms</b><small>mean
-												latency</small></span><span><b>0</b><small>cloud
-												services</small></span></span></span><a class="project-github"
-									href="https://github.com/anurag-env" target="_blank" rel="noopener"
-									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
-										class="fab fa-github" aria-hidden="true"></i></a><i
-									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
-							<div class="project-details">
-								<p>Built a fully local, zero-cloud research assistant that translates complex papers for
-									technical and lay audiences. Section-aware PyMuPDF chunking and ChromaDB retrieval
-									improved relevance over naive chunking.</p>
 							</div>
 						</details>
 						<details class="project-card">
