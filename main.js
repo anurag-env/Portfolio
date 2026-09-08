@@ -140,7 +140,7 @@ $(window).scroll(function () {
 (function () {
 	if (!("IntersectionObserver" in window)) return;
 
-	var sectionIds = ["about", "journey", "projects", "skills", "recognition"];
+	var sectionIds = ["about", "journey", "research", "projects", "skills", "recognition"];
 	var navLinks = {};
 	sectionIds.forEach(function (id) {
 		var el = document.querySelector('#side-nav a[href="#' + id + '"]');
@@ -177,6 +177,158 @@ $(window).scroll(function () {
 	);
 
 	sections.forEach(function (s) { io.observe(s); });
+})();
+
+// =============================================================
+// Research section — render cards from data
+// =============================================================
+(function () {
+	var papers = window.__researchPapers;
+	if (!papers || !papers.length) return;
+
+	var container = document.getElementById("research-cards");
+	if (!container) return;
+
+	var list = document.createElement("div");
+	list.className = "research-cards-list";
+
+	papers.forEach(function (paper, idx) {
+		var card = document.createElement("div");
+		card.className = "research-card" + (paper.featured ? " research-card-featured" : "");
+
+		// Eyebrow
+		var eyebrow = document.createElement("span");
+		eyebrow.className = "research-eyebrow";
+		eyebrow.textContent = paper.featured ? "FEATURED \u00b7 PUBLICATION" : "PUBLICATION";
+		card.appendChild(eyebrow);
+
+		// Title
+		var title = document.createElement("h2");
+		title.className = "research-title";
+		title.textContent = paper.title;
+		card.appendChild(title);
+
+		// Citation
+		var cite = document.createElement("p");
+		cite.className = "research-citation";
+		cite.textContent = paper.authors + " \u00b7 " + paper.venue + " \u00b7 " + paper.publisher + " \u00b7 " + paper.year;
+		card.appendChild(cite);
+
+		// Pipeline diagram
+		var pipeline = document.createElement("div");
+		pipeline.className = "pipeline";
+		paper.pipeline.forEach(function (stage, si) {
+			if (si > 0) {
+				var arrow = document.createElement("span");
+				arrow.className = "pipeline-arrow";
+				arrow.innerHTML = '<i class="fas fa-chevron-right"></i>';
+				pipeline.appendChild(arrow);
+			}
+			var node = document.createElement("div");
+			node.className = "pipeline-node";
+			var icon = document.createElement("i");
+			icon.className = stage.icon;
+			node.appendChild(icon);
+			var lbl = document.createElement("span");
+			lbl.textContent = stage.label;
+			node.appendChild(lbl);
+			pipeline.appendChild(node);
+		});
+		card.appendChild(pipeline);
+
+		// Abstract
+		if (paper.abstract) {
+			var absWrap = document.createElement("div");
+			absWrap.className = "pub-abstract";
+			var absP = document.createElement("p");
+			absP.textContent = paper.abstract;
+			absWrap.appendChild(absP);
+			card.appendChild(absWrap);
+		}
+
+		// Stats row
+		if (paper.stats && paper.stats.length) {
+			var statsRow = document.createElement("div");
+			statsRow.className = "research-stats";
+			paper.stats.forEach(function (s) {
+				var stat = document.createElement("div");
+				stat.className = "research-stat";
+				var val = document.createElement("span");
+				val.className = "research-stat-value";
+				val.textContent = s.value;
+				stat.appendChild(val);
+				var lbl = document.createElement("span");
+				lbl.className = "research-stat-label";
+				lbl.textContent = s.label;
+				stat.appendChild(lbl);
+				statsRow.appendChild(stat);
+			});
+			card.appendChild(statsRow);
+		}
+
+		// Action buttons
+		var actions = document.createElement("div");
+		actions.className = "research-actions";
+
+		if (paper.links && paper.links.publication) {
+			var pubBtn = document.createElement("a");
+			pubBtn.className = "research-btn research-btn-primary";
+			pubBtn.href = paper.links.publication;
+			pubBtn.target = "_blank";
+			pubBtn.rel = "noopener";
+			pubBtn.innerHTML = '<i class="fas fa-external-link-alt"></i>';
+			pubBtn.setAttribute("data-tooltip", "View Publication");
+			actions.appendChild(pubBtn);
+		}
+
+		if (paper.bibtex) {
+			var citeBtn = document.createElement("button");
+			citeBtn.className = "research-btn research-btn-cite";
+			citeBtn.type = "button";
+			citeBtn.innerHTML = '<i class="fas fa-quote-right"></i>';
+			citeBtn.setAttribute("data-bibtex-idx", idx);
+			citeBtn.setAttribute("data-tooltip", "Cite");
+			actions.appendChild(citeBtn);
+		}
+
+		card.appendChild(actions);
+
+		// BibTeX block (hidden by default)
+		if (paper.bibtex) {
+			var bibtexBlock = document.createElement("div");
+			bibtexBlock.className = "research-bibtex";
+			bibtexBlock.id = "bibtex-" + idx;
+			var pre = document.createElement("pre");
+			pre.textContent = paper.bibtex;
+			bibtexBlock.appendChild(pre);
+			var copiedMsg = document.createElement("div");
+			copiedMsg.className = "research-copied-msg";
+			copiedMsg.textContent = "Copied!";
+			bibtexBlock.appendChild(copiedMsg);
+			card.appendChild(bibtexBlock);
+		}
+
+		list.appendChild(card);
+	});
+
+	container.appendChild(list);
+
+	// BibTeX toggle + copy
+	container.addEventListener("click", function (e) {
+		var btn = e.target.closest("[data-bibtex-idx]");
+		if (!btn) return;
+		var idx = btn.getAttribute("data-bibtex-idx");
+		var block = document.getElementById("bibtex-" + idx);
+		if (!block) return;
+		block.classList.toggle("open");
+		if (block.classList.contains("open")) {
+			navigator.clipboard.writeText(block.querySelector("pre").textContent).then(function () {
+				var msg = block.querySelector(".research-copied-msg");
+				msg.classList.add("show");
+				setTimeout(function () { msg.classList.remove("show"); }, 1500);
+			});
+		}
+	});
 })();
 
 // Project-card links should navigate without also toggling the surrounding
