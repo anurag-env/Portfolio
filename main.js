@@ -196,11 +196,18 @@ $(window).scroll(function () {
 		var card = document.createElement("div");
 		card.className = "research-card" + (paper.featured ? " research-card-featured" : "");
 
-		// Eyebrow
+		// Eyebrow row: pill left, year right
+		var eyebrowRow = document.createElement("div");
+		eyebrowRow.className = "research-eyebrow-row";
 		var eyebrow = document.createElement("span");
 		eyebrow.className = "research-eyebrow";
-		eyebrow.textContent = paper.featured ? "FEATURED \u00b7 PUBLICATION" : "PUBLICATION";
-		card.appendChild(eyebrow);
+		eyebrow.textContent = paper.featured ? "ACCEPTED" : "IN PROGRESS";
+		eyebrowRow.appendChild(eyebrow);
+		var yearTag = document.createElement("span");
+		yearTag.className = "research-year";
+		yearTag.textContent = paper.year;
+		eyebrowRow.appendChild(yearTag);
+		card.appendChild(eyebrowRow);
 
 		// Title
 		var title = document.createElement("h2");
@@ -211,30 +218,35 @@ $(window).scroll(function () {
 		// Citation
 		var cite = document.createElement("p");
 		cite.className = "research-citation";
-		cite.textContent = paper.authors + " \u00b7 " + paper.venue + " \u00b7 " + paper.publisher + " \u00b7 " + paper.year;
+		var citeParts = [paper.authors];
+		if (paper.venue) citeParts.push(paper.venue);
+		if (paper.publisher) citeParts.push(paper.publisher);
+		cite.textContent = citeParts.join(" \u00b7 ");
 		card.appendChild(cite);
 
-		// Pipeline diagram
-		var pipeline = document.createElement("div");
-		pipeline.className = "pipeline";
-		paper.pipeline.forEach(function (stage, si) {
-			if (si > 0) {
-				var arrow = document.createElement("span");
-				arrow.className = "pipeline-arrow";
-				arrow.innerHTML = '<i class="fas fa-chevron-right"></i>';
-				pipeline.appendChild(arrow);
-			}
-			var node = document.createElement("div");
-			node.className = "pipeline-node";
-			var icon = document.createElement("i");
-			icon.className = stage.icon;
-			node.appendChild(icon);
-			var lbl = document.createElement("span");
-			lbl.textContent = stage.label;
-			node.appendChild(lbl);
-			pipeline.appendChild(node);
-		});
-		card.appendChild(pipeline);
+		// Pipeline diagram (skip if empty)
+		if (paper.pipeline && paper.pipeline.length) {
+			var pipeline = document.createElement("div");
+			pipeline.className = "pipeline";
+			paper.pipeline.forEach(function (stage, si) {
+				if (si > 0) {
+					var arrow = document.createElement("span");
+					arrow.className = "pipeline-arrow";
+					arrow.innerHTML = '<i class="fas fa-chevron-right"></i>';
+					pipeline.appendChild(arrow);
+				}
+				var node = document.createElement("div");
+				node.className = "pipeline-node";
+				var icon = document.createElement("i");
+				icon.className = stage.icon;
+				node.appendChild(icon);
+				var lbl = document.createElement("span");
+				lbl.textContent = stage.label;
+				node.appendChild(lbl);
+				pipeline.appendChild(node);
+			});
+			card.appendChild(pipeline);
+		}
 
 		// Abstract
 		if (paper.abstract) {
@@ -246,89 +258,35 @@ $(window).scroll(function () {
 			card.appendChild(absWrap);
 		}
 
-		// Stats row
-		if (paper.stats && paper.stats.length) {
-			var statsRow = document.createElement("div");
-			statsRow.className = "research-stats";
-			paper.stats.forEach(function (s) {
-				var stat = document.createElement("div");
-				stat.className = "research-stat";
-				var val = document.createElement("span");
-				val.className = "research-stat-value";
-				val.textContent = s.value;
-				stat.appendChild(val);
-				var lbl = document.createElement("span");
-				lbl.className = "research-stat-label";
-				lbl.textContent = s.label;
-				stat.appendChild(lbl);
-				statsRow.appendChild(stat);
-			});
-			card.appendChild(statsRow);
-		}
-
-		// Action buttons
-		var actions = document.createElement("div");
-		actions.className = "research-actions";
-
-		if (paper.links && paper.links.publication) {
-			var pubBtn = document.createElement("a");
-			pubBtn.className = "research-btn research-btn-primary";
-			pubBtn.href = paper.links.publication;
-			pubBtn.target = "_blank";
-			pubBtn.rel = "noopener";
-			pubBtn.innerHTML = '<i class="fas fa-external-link-alt"></i>';
-			pubBtn.setAttribute("data-tooltip", "View Publication");
-			actions.appendChild(pubBtn);
-		}
-
-		if (paper.bibtex) {
-			var citeBtn = document.createElement("button");
-			citeBtn.className = "research-btn research-btn-cite";
-			citeBtn.type = "button";
-			citeBtn.innerHTML = '<i class="fas fa-quote-right"></i>';
-			citeBtn.setAttribute("data-bibtex-idx", idx);
-			citeBtn.setAttribute("data-tooltip", "Cite");
-			actions.appendChild(citeBtn);
-		}
-
-		card.appendChild(actions);
-
-		// BibTeX block (hidden by default)
-		if (paper.bibtex) {
-			var bibtexBlock = document.createElement("div");
-			bibtexBlock.className = "research-bibtex";
-			bibtexBlock.id = "bibtex-" + idx;
-			var pre = document.createElement("pre");
-			pre.textContent = paper.bibtex;
-			bibtexBlock.appendChild(pre);
-			var copiedMsg = document.createElement("div");
-			copiedMsg.className = "research-copied-msg";
-			copiedMsg.textContent = "Copied!";
-			bibtexBlock.appendChild(copiedMsg);
-			card.appendChild(bibtexBlock);
+		// Tech stack tags + publication button row
+		if ((paper.stats && paper.stats.length) || (paper.links && paper.links.publication)) {
+			var techRow = document.createElement("div");
+			techRow.className = "research-tech-tags";
+			if (paper.stats && paper.stats.length) {
+				paper.stats.forEach(function (s) {
+					var tag = document.createElement("span");
+					tag.className = "research-tech-tag";
+					tag.textContent = s.value;
+					techRow.appendChild(tag);
+				});
+			}
+			if (paper.links && paper.links.publication) {
+				var pubBtn = document.createElement("a");
+				pubBtn.className = "research-btn research-btn-primary";
+				pubBtn.href = paper.links.publication;
+				pubBtn.target = "_blank";
+				pubBtn.rel = "noopener";
+				pubBtn.innerHTML = '<i class="fas fa-external-link-alt"></i>';
+				pubBtn.setAttribute("data-tooltip", "View Conference");
+				techRow.appendChild(pubBtn);
+			}
+			card.appendChild(techRow);
 		}
 
 		list.appendChild(card);
 	});
 
 	container.appendChild(list);
-
-	// BibTeX toggle + copy
-	container.addEventListener("click", function (e) {
-		var btn = e.target.closest("[data-bibtex-idx]");
-		if (!btn) return;
-		var idx = btn.getAttribute("data-bibtex-idx");
-		var block = document.getElementById("bibtex-" + idx);
-		if (!block) return;
-		block.classList.toggle("open");
-		if (block.classList.contains("open")) {
-			navigator.clipboard.writeText(block.querySelector("pre").textContent).then(function () {
-				var msg = block.querySelector(".research-copied-msg");
-				msg.classList.add("show");
-				setTimeout(function () { msg.classList.remove("show"); }, 1500);
-			});
-		}
-	});
 })();
 
 // Project-card links should navigate without also toggling the surrounding
@@ -338,3 +296,27 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		event.stopPropagation();
 	});
 });
+
+// =============================================================
+// Dark-mode toggle
+// =============================================================
+(function () {
+	var toggle = document.getElementById("theme-toggle");
+	var icon = toggle.querySelector("i");
+	var body = document.body;
+	var STORAGE_KEY = "theme";
+
+	// Restore saved preference
+	if (localStorage.getItem(STORAGE_KEY) === "dark") {
+		body.classList.add("dark-mode");
+		icon.classList.replace("fa-moon", "fa-sun");
+	}
+
+	toggle.addEventListener("click", function () {
+		body.classList.toggle("dark-mode");
+		var isDark = body.classList.contains("dark-mode");
+		icon.classList.toggle("fa-moon", !isDark);
+		icon.classList.toggle("fa-sun", isDark);
+		localStorage.setItem(STORAGE_KEY, isDark ? "dark" : "light");
+	});
+})();

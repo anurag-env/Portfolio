@@ -129,8 +129,11 @@
 		</div>
 		<div class="row" id="details-container">
 			<div class="col-2">
-				<nav class="sticky-top" id="side-nav" aria-label="Section navigation">
-					<div class="row side-nav-picture">
+			<nav class="sticky-top" id="side-nav" aria-label="Section navigation">
+				<button id="theme-toggle" aria-label="Toggle dark mode">
+					<i class="fas fa-moon"></i>
+				</button>
+				<div class="row side-nav-picture">
 						<picture>
 							<img class="avatar" src="./images/Avatar__.png" alt="Portrait of Anurag Singh">
 						</picture>
@@ -209,7 +212,7 @@
 						<div class="col-3 contact-icon">
 							<a href="./Anurag_Singh_Resume.pdf" target="_blank" rel="noopener"
 								aria-label="View my resume (PDF)" data-tooltip="View my resume (PDF)">
-								<img id="resume-icon" src="./images/resume.svg" alt="Resume">
+								<i id="resume-icon" class="fas fa-file-pdf" aria-hidden="true"></i>
 							</a>
 						</div>
 						<div class="col-3 contact-icon">
@@ -244,30 +247,30 @@
 					at <a href="https://www.smvdu.ac.in/" target="_blank" rel="noopener">Shri Mata Vaishno Devi
 						University</a>.</p>
 					<div id="hobbies">
-						<h3>I work with…</h3>
+						<h3>Outside of work, you can find me…</h3>
 						<div class="row hobby-row">
-							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Natural Language Processing"
-								data-tooltip="Natural Language Processing">
-								<span class="hobby-helper"></span><img loading="lazy" src="./images/books.svg"
-									width="55" alt="">
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Tea"
+								data-tooltip="Tea">
+								<span class="hobby-helper"></span><i class="fas fa-coffee hobby-fa-icon"
+									aria-hidden="true"></i>
 							</div>
-							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Deep Learning"
-								data-tooltip="Deep Learning">
-								<span class="hobby-helper"></span><img loading="lazy" src="./images/dance.svg"
-									width="40" alt="">
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Chess"
+								data-tooltip="Chess">
+								<span class="hobby-helper"></span><i class="fas fa-chess hobby-fa-icon"
+									aria-hidden="true"></i>
 							</div>
-							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Python development"
-								data-tooltip="Python development">
-								<span class="hobby-helper"></span><img loading="lazy" src="./images/keyboard.svg"
-									width="50" alt="">
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Simulation Games"
+								data-tooltip="Simulation Games">
+								<span class="hobby-helper"></span><i class="fas fa-gamepad hobby-fa-icon"
+									aria-hidden="true"></i>
 							</div>
-							<div class="col hobby-icon" tabindex="0" role="img" aria-label="RAG pipelines"
-								data-tooltip="RAG pipelines">
-								<span class="hobby-helper"></span><img loading="lazy" src="./images/travel.svg"
-									width="65" alt="">
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Planning next trip - learning about the world, countries, cultures, history"
+								data-tooltip="Planning next trip - learning about the world, countries, cultures, history">
+								<span class="hobby-helper"></span><i class="fas fa-globe-americas hobby-fa-icon"
+									aria-hidden="true"></i>
 							</div>
-							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Applied AI research"
-								data-tooltip="Applied AI research">
+							<div class="col hobby-icon" tabindex="0" role="img" aria-label="Exploring improv comedy"
+								data-tooltip="Exploring improv comedy">
 								<span class="hobby-helper"></span><i class="fas fa-theater-masks hobby-fa-icon"
 									aria-hidden="true"></i>
 							</div>
@@ -303,8 +306,7 @@
 						<li class="tl-item">
 							<div class="tl-marker" aria-hidden="true"><i class="fas fa-briefcase"></i></div>
 							<div class="tl-card">
-								<div class="tl-header"><img loading="lazy" class="tl-logo" src="./images/freelance.jpg"
-										alt="Independent">
+								<div class="tl-header"><i class="fas fa-laptop-code tl-logo tl-fa-logo"></i>
 									<div class="tl-headings">
 										<div class="tl-org">Independent</div>
 										<div class="tl-role">Freelance Software &amp; AI Engineer · Remote</div>
@@ -325,7 +327,7 @@
 							<div class="tl-marker tl-marker-edu" aria-hidden="true"><i
 									class="fas fa-graduation-cap"></i></div>
 							<div class="tl-card tl-card-edu">
-								<div class="tl-header"><img loading="lazy" class="tl-logo" src="./images/college.webp"
+								<div class="tl-header"><img loading="lazy" class="tl-logo" src="./images/college.png"
 										alt="Shri Mata Vaishno Devi University">
 									<div class="tl-headings">
 										<div class="tl-org">Shri Mata Vaishno Devi University</div>
@@ -520,8 +522,7 @@
 					<h1>Projects</h1>
 					<div class="projects-grid">
 						<details class="project-card project-card-featured">
-							<summary><span class="project-icon project-icon-featured"><img loading="lazy" src="./images/roberta.jpg"
-										alt="RoBERTa"></span><span class="project-summary"><span
+							<summary><span class="project-icon project-icon-featured"><i class="fas fa-smile" aria-hidden="true"></i></span><span class="project-summary"><span
 										class="project-eyebrow">FEATURED · NLP</span><span class="project-title">RoBERTa Sentiment Classification</span><span class="project-outcome">First-author paper on context-aware sentiment classification of social media text using RoBERTa transformers</span><span class="project-stack"><a class="tech-tag"
 											href="https://www.python.org/" target="_blank"
 											rel="noopener">Python</a><a class="tech-tag"
@@ -537,15 +538,14 @@
 									href="https://github.com/anurag-env" target="_blank" rel="noopener"
 									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
 										class="fab fa-github" aria-hidden="true"></i></a><i
-									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
 								<p>Designed and fine-tuned an end-to-end RoBERTa-based transformer pipeline for 3-class sentiment classification on 18,170 YouTube comments, achieving 96% accuracy and 0.95 macro-F1. Addressed severe class imbalance (62.6% positive vs. 12.9% negative) via weighted cross-entropy loss and label smoothing. Published first-author at NLPIR 2026, Springer LNNS.</p>
 							</div>
 						</details>
 						<details class="project-card">
-							<summary><span class="project-icon"><img loading="lazy" src="./images/sql.jpg"
-										alt=""></span><span class="project-summary"><span
-										class="project-eyebrow">Generative AI</span><span class="project-title">NL2SQL:
+							<summary><span class="project-icon"><i class="fas fa-database" aria-hidden="true"></i></span><span class="project-summary"><span
+										class="project-eyebrow">NLP</span><span class="project-title">NL2SQL:
 										Text-to-SQL Model</span><span class="project-outcome">Natural language to SQL
 										generation with T5-small</span><span class="project-stack"><a class="tech-tag"
 											href="https://www.python.org/" target="_blank" rel="noopener">Python</a><a
@@ -562,15 +562,14 @@
 									href="https://github.com/anurag-env" target="_blank" rel="noopener"
 									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
 										class="fab fa-github" aria-hidden="true"></i></a><i
-									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
 								<p>Fine-tuned T5-small for text-to-SQL generation on WikiSQL, using QLoRA to keep
 									training within a 4GB VRAM budget.</p>
 							</div>
 						</details>
 						<details class="project-card">
-							<summary><span class="project-icon"><img loading="lazy" src="./images/pragya1.jpg"
-										alt=""></span><span class="project-summary"><span
+							<summary><span class="project-icon"><i class="fas fa-book-open" aria-hidden="true"></i></span><span class="project-summary"><span
 										class="project-eyebrow">RAG</span><span class="project-title">Pragya: Local RAG
 										Research Assistant</span><span class="project-outcome">Local research assistance
 										with CPU-friendly retrieval</span><span class="project-stack"><a
@@ -588,7 +587,7 @@
 									href="https://github.com/anurag-env" target="_blank" rel="noopener"
 									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
 										class="fab fa-github" aria-hidden="true"></i></a><i
-									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
 								<p>Built a fully local, zero-cloud research assistant that translates complex papers for
 									technical and lay audiences. Section-aware PyMuPDF chunking and ChromaDB retrieval
@@ -596,8 +595,7 @@
 							</div>
 						</details>
 						<details class="project-card">
-							<summary><span class="project-icon"><img loading="lazy" src="./images/sql.jpg"
-										alt=""></span><span class="project-summary"><span
+							<summary><span class="project-icon"><i class="fas fa-pen-nib" aria-hidden="true"></i></span><span class="project-summary"><span
 										class="project-eyebrow">Generative AI</span><span class="project-title">AI Research Paper Writer</span><span class="project-outcome">Automated research paper generation with LLM pipelines</span><span class="project-stack"><a
 											class="tech-tag" href="https://www.python.org/" target="_blank"
 											rel="noopener">Python</a><a class="tech-tag"
@@ -611,7 +609,7 @@
 									href="https://github.com/anurag-env" target="_blank" rel="noopener"
 									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
 										class="fab fa-github" aria-hidden="true"></i></a><i
-									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
 								<p>Engineered an end-to-end automated research paper generation pipeline producing
 									publication-ready DOCX documents from a single topic input. Designed a modular 10+
@@ -620,9 +618,8 @@
 							</div>
 						</details>
 						<details class="project-card">
-							<summary><span class="project-icon"><img loading="lazy" src="./images/vault1.jpg"
-										alt=""></span><span class="project-summary"><span
-										class="project-eyebrow">Security</span><span class="project-title">Local Password Manager</span><span class="project-outcome">Fully local, zero-cloud encrypted credential storage</span><span class="project-stack"><a
+							<summary><span class="project-icon"><i class="fas fa-shield-alt" aria-hidden="true"></i></span><span class="project-summary"><span
+										class="project-eyebrow">Security</span><span class="project-title">Vault: Local Password Manager</span><span class="project-outcome">Fully local, zero-cloud encrypted credential storage</span><span class="project-stack"><a
 											class="tech-tag" href="https://www.electronjs.org/" target="_blank"
 											rel="noopener">Electron</a><a class="tech-tag"
 											href="https://nodejs.org/" target="_blank"
@@ -635,7 +632,7 @@
 									href="https://github.com/anurag-env" target="_blank" rel="noopener"
 									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
 										class="fab fa-github" aria-hidden="true"></i></a><i
-									class="fas fa-plus project-toggle" aria-hidden="true"></i></summary>
+									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
 								<p>Built a fully local-only password manager using Electron with Argon2id key derivation
 									and AES-256-GCM authenticated encryption. Implemented SQLite with WAL checkpointing
@@ -818,7 +815,18 @@
 							published in Springer's Lecture Notes in Networks and Systems. <a href="#research">View details <i class="fas fa-arrow-down" style="font-size:0.7em;"></i></a></p>
 					</div>
 				</div>
-				<div class="container">
+				
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>AI Club Co-Lead</b></div>
+							<div class="col-3 achievement-date">2026</div>
+						</div>
+						<div class="row achievement-content">
+							<p>Directing AI initiatives and technical workshops on Deep Learning and Computer Vision for
+								100+ students at Shri Mata Vaishno Devi University.</p>
+						</div>
+					</div>
+					<div class="container">
 					<div class="row">
 						<div class="col-9 achievement-title"><b>Smart India Hackathon 2025 Finalist</b></div>
 						<div class="col-3 achievement-date">2025</div>
@@ -828,16 +836,6 @@
 								platform for early wheat disease detection that fuses satellite imagery, drone
 								surveillance, and farmer-uploaded leaf images to generate real-time disease-risk maps
 								and predictive advisories.</p>
-						</div>
-					</div>
-					<div class="container">
-						<div class="row">
-							<div class="col-9 achievement-title"><b>AI Club Co-Lead</b></div>
-							<div class="col-3 achievement-date">SMVDU</div>
-						</div>
-						<div class="row achievement-content">
-							<p>Directing AI initiatives and technical workshops on Deep Learning and Computer Vision for
-								100+ students at Shri Mata Vaishno Devi University.</p>
 						</div>
 					</div>
 					<!-- Previous recognition list retained only as source markup; hidden while the resume-based achievements above are shown.
@@ -947,7 +945,7 @@
 		</div>
 
 		<div class="row" id="copyright">
-			<div class="col-12">Made with <span id="love">❤️</span> by <span id="footer-name">Anurag Singh</span></div>
+			<div class="col-12">Made with <span id="love"><i class="fas fa-heart"></i></span> by <span id="footer-name">Anurag Singh</span></div>
 		</div>
 
 
