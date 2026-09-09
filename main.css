@@ -149,10 +149,15 @@ a:focus-visible{
 
 #landing-socials{
 	bottom: 4vh;
-	left: 250px;
+	left: 220px;
 	right: auto;
 	display: flex;
 	gap: 1em;
+	transition: left 0.35s ease;
+}
+
+#landing-socials.is-shifted{
+	left: 24px;
 }
 
 .social-icon{
@@ -2486,7 +2491,7 @@ ol.timeline::before{
 	left: 24px;
 	width: auto;
 	z-index: 100;
-	pointer-events: none;
+	pointer-events: auto;
 	background: rgba(20,20,20,0.85);
 	border: 1px solid rgba(255,255,255,0.1);
 	border-radius: 6px;
@@ -2496,8 +2501,81 @@ ol.timeline::before{
 	line-height: 1.6;
 	color: rgba(255,255,255,0.7);
 	display: none;
+	transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+#boids-debug-stats.is-collapsed{
+	opacity: 0;
+	transform: translateX(-20px) scale(0.95);
+	pointer-events: none;
+}
+
+.boids-stats-header{
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 6px;
+	font-size: 9px;
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	color: rgba(255,255,255,0.45);
+	font-weight: 500;
+	white-space: normal;
+}
+
+.boids-stats-header .boids-reset-btn{
+	margin-left: auto;
+}
+
+.boids-stats-dot{
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: #4caf50;
+	flex-shrink: 0;
+	animation: boids-pulse 2s ease-in-out infinite;
+}
+
+@keyframes boids-pulse{
+	0%, 100%{ opacity: 0.4; }
+	50%{ opacity: 1; }
+}
+
+.boids-stats-values{
 	white-space: pre;
-	transition: opacity 0.3s ease;
+	margin: 0;
+}
+
+.boids-reset-btn{
+	border-radius: 50%;
+	border: 1px solid rgba(255,255,255,0.35);
+	background: rgba(255,255,255,0.06);
+	color: rgba(255,255,255,0.45);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	line-height: 1;
+	width: 22px;
+	height: 22px;
+	font-size: 11px;
+	transition: border-color 0.2s, color 0.2s, background 0.2s;
+	flex-shrink: 0;
+}
+
+.boids-reset-btn:hover,
+.boids-reset-btn:focus-visible{
+	border-color: rgba(255,255,255,0.7);
+	color: rgba(255,255,255,0.8);
+	background: rgba(255,255,255,0.1);
+	outline: none;
+}
+
+.boids-reset-btn:active{
+	border-color: rgba(100,200,255,0.6);
+	color: rgba(100,200,255,0.9);
+	background: rgba(100,200,255,0.1);
 }
 
 #boids-debug-stats.is-hidden{

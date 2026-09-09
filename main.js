@@ -348,6 +348,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	var running = false;
 	var mouse = null;
 	var heroVisible = true;
+	var statsVisible = true;
 
 	// --- Flock config ---
 	var FLOCK_COUNT = 4;
@@ -724,11 +725,14 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			var sizes = clusters.sizes;
 			var largest = sizes.length > 0 ? sizes[sizes.length - 1] : 0;
 			var median = sizes.length > 0 ? sizes[Math.floor(sizes.length / 2)] : 0;
-			statsEl.textContent =
-				"boids: " + boids.length +
-				"\nflocks: " + clusters.count +
-				"\nlargest: " + largest + "  median: " + median +
-				"\nfps: " + fpsDisplay;
+			var valuesEl = statsEl.querySelector(".boids-stats-values");
+			if (valuesEl) {
+				valuesEl.textContent =
+					"boids: " + boids.length +
+					"\nflocks: " + clusters.count +
+					"\nlargest: " + largest + "  median: " + median +
+					"\nfps: " + fpsDisplay;
+			}
 		}
 
 		if (!debugOn) return;
@@ -830,6 +834,29 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		else stop();
 	}
 
+	function resetSimulation() {
+		stop();
+		boids = [];
+		flocks = [];
+		frameCount = 0;
+		fpsFrames = 0;
+		fpsLast = performance.now();
+		fpsDisplay = 60;
+		statsLast = 0;
+		driftAngle = Math.random() * Math.PI * 2;
+		resize();
+		createBoids();
+		start();
+	}
+
+	function toggleStats() {
+		statsVisible = !statsVisible;
+		var stats = document.getElementById("boids-debug-stats");
+		var socials = document.getElementById("landing-socials");
+		if (stats) stats.classList.toggle("is-collapsed", !statsVisible);
+		if (socials) socials.classList.toggle("is-shifted", !statsVisible);
+	}
+
 	resize();
 	createBoids();
 	start();
@@ -863,6 +890,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			btn.setAttribute("aria-pressed", String(debugOn));
 		}
 		if (stats) stats.style.display = debugOn ? "block" : "none";
+		toggleStats();
 	});
 
 	// Initialize debug UI to active state on load (dev only)
@@ -872,6 +900,28 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		if (!stats) {
 			stats = document.createElement("div");
 			stats.id = "boids-debug-stats";
+
+			var header = document.createElement("div");
+			header.className = "boids-stats-header";
+			var dot = document.createElement("span");
+			dot.className = "boids-stats-dot";
+			header.appendChild(dot);
+			header.appendChild(document.createTextNode("Simulation Stats"));
+
+			var resetBtn = document.createElement("button");
+			resetBtn.className = "boids-reset-btn";
+			resetBtn.type = "button";
+			resetBtn.title = "Reset simulation";
+			resetBtn.setAttribute("aria-label", "Reset simulation");
+			resetBtn.innerHTML = "&#x21bb;";
+			header.appendChild(resetBtn);
+
+			var values = document.createElement("div");
+			values.className = "boids-stats-values";
+
+			stats.appendChild(header);
+			stats.appendChild(values);
+
 			var landing = document.getElementById("landing-container");
 			(landing || document.body).appendChild(stats);
 		}
@@ -880,6 +930,15 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			btn.setAttribute("aria-pressed", "true");
 		}
 		if (stats) stats.style.display = isDev ? "block" : "none";
+
+		var resetBtnEl = stats.querySelector(".boids-reset-btn");
+		if (resetBtnEl) {
+			resetBtnEl.addEventListener("click", function (e) {
+				e.stopPropagation();
+				resetSimulation();
+				if (!statsVisible) toggleStats();
+			});
+		}
 	})();
 
 	// Hero visibility: pause animation & hide overlays when scrolled out
