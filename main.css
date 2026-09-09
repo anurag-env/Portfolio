@@ -81,6 +81,25 @@ a:focus-visible{
 	z-index: 2;
 }
 
+.boids-fallback{
+	display: none;
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background: #0d0d0d;
+}
+
+.boids-fallback span{
+	position: absolute;
+	bottom: 80px;
+	left: 50%;
+	transform: translateX(-50%);
+	color: rgba(255,255,255,0.35);
+	font-size: 0.82rem;
+	letter-spacing: 0.04em;
+	white-space: nowrap;
+}
+
 #landing-container .landing-content{
 	position: relative;
 	z-index: 2;
@@ -1252,9 +1271,11 @@ a.nav-active .side-nav-element .fab{
 }
 
 .research-year{
-	color: #5a5a5a;
+	color: #267d66;
 	font-size: 0.88rem;
 	font-weight: 600;
+	white-space: nowrap;
+	flex-shrink: 0;
 }
 
 .research-title{
@@ -1916,7 +1937,7 @@ ol.timeline::before{
 }
 
 .project-card-featured .project-details{
-	margin: 0 24px 24px 114px;
+	margin: 0 24px 24px 86px;
 }
 
 .project-card summary{
@@ -2148,6 +2169,14 @@ ol.timeline::before{
 	.projects-grid{ grid-template-columns: 1fr; }
 	.project-card-featured{ grid-column: span 1; }
 	.project-card-featured summary{ grid-template-columns: 56px minmax(0, 1fr); padding: 18px 72px 18px 18px; gap: 12px; }
+	.project-card-featured .project-live-link{
+		position: relative;
+		right: auto;
+		bottom: auto;
+		grid-column: 2;
+		justify-self: start;
+		margin: 10px 0 0 0;
+	}
 	.project-icon-featured{ width: 56px; height: 56px; }
 	.project-icon-featured i{ font-size: 38px; }
 	.project-card-featured .project-title{ font-size: 1.12rem; }
@@ -2155,6 +2184,14 @@ ol.timeline::before{
 	.project-card-featured .project-metrics b{ font-size: 0.96rem; }
 	.project-card-featured .project-details{ margin: 0 16px 16px; }
 	.project-card summary{ grid-template-columns: 44px minmax(0, 1fr); padding: 16px 72px 16px 16px; gap: 10px; }
+	.project-card .project-live-link{
+		position: relative;
+		right: auto;
+		bottom: auto;
+		grid-column: 2;
+		justify-self: start;
+		margin: 10px 0 0 0;
+	}
 	.project-icon{ width: 44px; height: 44px; border-radius: 10px; }
 	.project-icon i{ font-size: 29px; }
 	.project-title{ font-size: 1.04rem; }
@@ -2263,6 +2300,12 @@ ol.timeline::before{
    Mobile responsive
    ============================================================ */
 @media (max-width: 900px){
+	/* Boids simulation: hide canvas, show fallback on mobile */
+	#boids-canvas{ display: none !important; }
+	.boids-fallback{ display: block; }
+	#boids-info{ display: none !important; }
+	#boids-debug-stats{ display: none !important; }
+
 	/* Hide the sidebar entirely; main content takes the full width */
 	#details-container > .col-2{
 		display: none;
@@ -2272,6 +2315,57 @@ ol.timeline::before{
 		width: 100%;
 		padding-left: 0;
 		padding-right: 0;
+	}
+
+	/* ── Mobile hero vertical layout ── */
+	/* All landing-content elements stay position:absolute (from base).
+	   Override only top/left/bottom/right to reposition them.
+	   Content group (title + buttons + socials) centered at 50vh. */
+
+	#landing-header{
+		top: 60%;
+		left: 0;
+		right: 0;
+		bottom: auto;
+		transform: translateY(-50%);
+		padding: 0 5vw;
+	}
+
+	#landing-cta{
+		top: calc(60% + 80px);
+		left: 50%;
+		right: auto;
+		bottom: auto;
+		transform: translateX(-50%);
+		padding: 0;
+		width: auto;
+	}
+
+	.landing-cta-btn{
+		white-space: nowrap;
+		padding: 0.45em 1em;
+	}
+
+	#landing-socials{
+		top: calc(60% + 140px);
+		left: 50%;
+		right: auto;
+		bottom: auto;
+		transform: translateX(-50%);
+		justify-content: center;
+	}
+
+	.boids-fallback span{
+		bottom: 105px;
+	}
+
+	#landing-footer{
+		top: auto;
+		bottom: 4vh;
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+		padding-bottom: 10px;
 	}
 
 	/* Landing typography */
@@ -2291,10 +2385,6 @@ ol.timeline::before{
 	.heading-subtitle{
 		font-size: 0.95rem;
 		margin-top: 0.5rem;
-	}
-	#landing-header{
-		top: 28vh;
-		padding: 0 5vw;
 	}
 
 	/* Chevron stays visible but smaller */
@@ -2405,7 +2495,6 @@ ol.timeline::before{
 	#heading-title{ font-size: 1rem; }
 	.heading-line{ font-size: 1rem; }
 	.heading-subtitle{ font-size: 0.85rem; }
-	#landing-header{ top: 25vh; }
 }
 
 #landing-container{

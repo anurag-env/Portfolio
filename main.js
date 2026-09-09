@@ -23,6 +23,12 @@ $(window).scroll(function () {
 	$("#heading-name").css("opacity", opac1);
 	$("#heading-title").css("opacity", opac1);
 	$("#landing-footer").css("opacity", opac1);
+	$("#landing-cta").css("opacity", opac1);
+	$("#landing-socials").css("opacity", opac1);
+	$("#boids-debug-btn").css("opacity", opac1);
+	$("#boids-info-btn").css("opacity", opac1);
+	$("#boids-info-tooltip").css("opacity", opac1);
+	$("#boids-debug-stats").css("opacity", opac1);
 });
 
 // =============================================================
@@ -335,11 +341,13 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 // =============================================================
 // Boids flocking simulation — hero section background
+// Desktop-only: fully mounted/unmounted based on viewport width
 // =============================================================
 (function () {
+	var DESKTOP_BP = 1024;
 	var canvas = document.getElementById("boids-canvas");
+	var fallback = document.getElementById("boids-fallback");
 	if (!canvas) return;
-	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
 	var ctx = canvas.getContext("2d");
 	var boids = [];
@@ -349,6 +357,10 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	var mouse = null;
 	var heroVisible = true;
 	var statsVisible = true;
+	var initialised = false;
+
+	// Stored listener references for clean removal
+	var onMouseMove, onMouseLeave, onResize, onVisibilityChange;
 
 	// --- Flock config ---
 	var FLOCK_COUNT = 4;
@@ -357,7 +369,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	var DENSITY_RADIUS = 40;
 	var DENSITY_LIMIT = 12;
 	var DENSITY_FORCE = 0.06;
-	var EXPLORE_INTERVAL = 720; // frames (~12s at 60fps)
+	var EXPLORE_INTERVAL = 720;
 
 	// --- Boid behaviour ---
 	var SEP_RADIUS = 22;
@@ -388,7 +400,16 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	var statsLast = 0;
 	var focusIdx = -1;
 	var focusTimer = 0;
-	var FOCUS_RESELECT = 240; // frames (~4s at 60fps)
+	var FOCUS_RESELECT = 240;
+
+	// Observer references for cleanup
+	var heroIo = null;
+	var boidsInfo = null;
+	var boidsStats = null;
+
+	function isDesktop() {
+		return window.innerWidth >= DESKTOP_BP;
+	}
 
 	function resize() {
 		canvas.width = canvas.offsetWidth;
@@ -414,14 +435,12 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		boids = [];
 		flocks = [];
 		var pad = 80;
-		// Divide canvas into a 2x2 grid — one quadrant per flock
 		var cols = 2, rows = 2;
 		var zoneW = (canvas.width - pad * 2) / cols;
 		var zoneH = (canvas.height - pad * 2) / rows;
 		for (var f = 0; f < FLOCK_COUNT; f++) {
 			var col = f % cols;
 			var row = Math.floor(f / cols);
-			// Center of this flock's quadrant
 			var gx = pad + zoneW * col + zoneW * 0.5;
 			var gy = pad + zoneH * row + zoneH * 0.5;
 			flocks.push({
@@ -430,14 +449,12 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				wanderAngle: Math.random() * Math.PI * 2,
 				exploreTimer: Math.floor(Math.random() * EXPLORE_INTERVAL)
 			});
-			// Per-flock base hue, randomized within a ±30° band
 			var baseHue = (f / FLOCK_COUNT) * 360 + (Math.random() - 0.5) * 60;
-			var sat = 70 + Math.random() * 20;   // 70–90%
-			var lit = 55 + Math.random() * 10;   // 55–65%
+			var sat = 70 + Math.random() * 20;
+			var lit = 55 + Math.random() * 10;
 			for (var i = 0; i < BOIDS_PER; i++) {
 				var angle = Math.random() * Math.PI * 2;
 				var spd = MAX_SPEED * (0.7 + Math.random() * 0.3);
-				// Jitter each boid's hue ±12° from the flock base for natural variety
 				var h = (baseHue + (Math.random() - 0.5) * 24 + 360) % 360;
 				boids.push({
 					x: gx + (Math.random() - 0.5) * 40,
@@ -462,10 +479,8 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 	function update() {
 		frameCount++;
-		// Slowly shift global drift direction
 		driftAngle += (Math.random() - 0.5) * 0.02;
 
-		// Wander each flock's goal + periodic exploration reset
 		for (var f = 0; f < flocks.length; f++) {
 			var g = flocks[f];
 			g.exploreTimer++;
@@ -478,22 +493,20 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				g.targetX += Math.cos(g.wanderAngle) * GOAL_SPEED;
 				g.targetY += Math.sin(g.wanderAngle) * GOAL_SPEED;
 			}
-			// Soft clamp goal to canvas
 			if (g.targetX < -50) g.targetX = canvas.width * 0.5;
 			if (g.targetX > canvas.width + 50) g.targetX = canvas.width * 0.5;
 			if (g.targetY < -50) g.targetY = canvas.height * 0.5;
 			if (g.targetY > canvas.height + 50) g.targetY = canvas.height * 0.5;
-			// Ease goal
 			g.goalX += (g.targetX - g.goalX) * 0.005;
 			g.goalY += (g.targetY - g.goalY) * 0.005;
 		}
 
 		for (var i = 0; i < boids.length; i++) {
 			var b = boids[i];
-			var sx = 0, sy = 0, sc = 0;   // separation
-			var ax = 0, ay = 0, ac = 0;   // alignment
-			var cx = 0, cy = 0, cc = 0;   // cohesion
-			var nearby = 0;               // density count
+			var sx = 0, sy = 0, sc = 0;
+			var ax = 0, ay = 0, ac = 0;
+			var cx = 0, cy = 0, cc = 0;
+			var nearby = 0;
 
 			for (var j = 0; j < boids.length; j++) {
 				if (i === j) continue;
@@ -502,20 +515,16 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				var dy = b.y - o.y;
 				var d = Math.sqrt(dx * dx + dy * dy);
 
-				// Separation: same flock only
 				if (o.flock === b.flock && d < SEP_RADIUS && d > 0) {
 					sx += dx / d; sy += dy / d; sc++;
 				}
-				// Alignment & cohesion: ALL nearby boids regardless of flock
 				if (d < ALIGN_RADIUS) { ax += o.vx; ay += o.vy; ac++; }
 				if (d < COH_RADIUS) { cx += o.x; cy += o.y; cc++; }
-				// Density: count boids in small radius (all flocks)
 				if (d < DENSITY_RADIUS) nearby++;
 			}
 
 			var fx = 0, fy = 0;
 
-			// Separation
 			if (sc > 0) {
 				sx /= sc; sy /= sc;
 				var sm = Math.sqrt(sx * sx + sy * sy);
@@ -524,10 +533,8 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				fx += sl[0] * WSEP; fy += sl[1] * WSEP;
 			}
 
-			// Density limit — extra separation when too crowded
 			if (nearby > DENSITY_LIMIT) {
 				var densityPush = (nearby - DENSITY_LIMIT) * DENSITY_FORCE;
-				// Push away from center of local mass
 				var dxAll = 0, dyAll = 0, dCount = 0;
 				for (var j = 0; j < boids.length; j++) {
 					if (i === j) continue;
@@ -547,7 +554,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				}
 			}
 
-			// Alignment (ALL nearby boids)
 			if (ac > 0) {
 				ax /= ac; ay /= ac;
 				var am = Math.sqrt(ax * ax + ay * ay);
@@ -556,7 +562,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				fx += al[0] * WALIGN; fy += al[1] * WALIGN;
 			}
 
-			// Cohesion (ALL nearby boids)
 			if (cc > 0) {
 				cx = cx / cc - b.x; cy = cy / cc - b.y;
 				var cm = Math.sqrt(cx * cx + cy * cy);
@@ -565,7 +570,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				fx += cl[0] * WCOH; fy += cl[1] * WCOH;
 			}
 
-			// Goal-seeking (wander with flock)
 			var fg = flocks[b.flock];
 			var gdx = fg.goalX - b.x;
 			var gdy = fg.goalY - b.y;
@@ -577,11 +581,9 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				fx += gl[0] * WGOAL; fy += gl[1] * WGOAL;
 			}
 
-			// Global drift
 			fx += Math.cos(driftAngle) * WDRIFT;
 			fy += Math.sin(driftAngle) * WDRIFT;
 
-			// Mouse fear / scatter
 			if (mouse) {
 				var mdx = b.x - mouse.x;
 				var mdy = b.y - mouse.y;
@@ -593,12 +595,10 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				}
 			}
 
-			// Apply
 			b.vx += fx; b.vy += fy;
 			var spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
 			if (spd > MAX_SPEED) { b.vx = (b.vx / spd) * MAX_SPEED; b.vy = (b.vy / spd) * MAX_SPEED; }
 
-			// Periodic random perturbation
 			if (Math.random() < 0.003) {
 				b.vx += (Math.random() - 0.5) * 0.15;
 				b.vy += (Math.random() - 0.5) * 0.15;
@@ -606,7 +606,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 			b.x += b.vx; b.y += b.vy;
 
-			// Wrap edges
 			if (b.x < -8) b.x = canvas.width + 8;
 			else if (b.x > canvas.width + 8) b.x = -8;
 			if (b.y < -8) b.y = canvas.height + 8;
@@ -640,12 +639,11 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	}
 
 	function detectClusters() {
-		var EPS = COH_RADIUS;        // 90px — neighborhood radius
+		var EPS = COH_RADIUS;
 		var EPS_SQ = EPS * EPS;
-		var MIN_PTS = 3;             // core-point threshold
+		var MIN_PTS = 3;
 		var n = boids.length;
 
-		// Pre-compute neighbor lists (O(n²))
 		var neighbors = [];
 		for (var i = 0; i < n; i++) {
 			neighbors[i] = [];
@@ -657,14 +655,12 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			}
 		}
 
-		// DBSCAN: label each point as CORE, BORDER, or NOISE
 		var CORE = 1, BORDER = 2, NOISE = 3;
 		var pointType = [];
 		for (var i = 0; i < n; i++) {
 			pointType[i] = neighbors[i].length >= MIN_PTS ? CORE : NOISE;
 		}
 
-		// Noise points that are within EPS of a core point become BORDER
 		for (var i = 0; i < n; i++) {
 			if (pointType[i] !== NOISE) continue;
 			for (var k = 0; k < neighbors[i].length; k++) {
@@ -672,13 +668,11 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			}
 		}
 
-		// Grow clusters from unvisited core points via BFS
 		var visited = [];
 		var clusterSizes = [];
 
 		for (var i = 0; i < n; i++) {
 			if (visited[i] || pointType[i] !== CORE) continue;
-			// BFS from this core point
 			var size = 0;
 			var queue = [i];
 			visited[i] = true;
@@ -686,7 +680,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				var cur = queue.shift();
 				size++;
 				if (pointType[cur] === NOISE) continue;
-				// CORE or BORDER: claim neighbors
 				for (var k = 0; k < neighbors[cur].length; k++) {
 					var nb = neighbors[cur][k];
 					if (!visited[nb]) {
@@ -698,7 +691,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			if (size > 0) clusterSizes.push(size);
 		}
 
-		// Count singletons (unvisited = no core point reachable)
 		for (var i = 0; i < n; i++) {
 			if (!visited[i]) clusterSizes.push(1);
 		}
@@ -708,7 +700,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	}
 
 	function drawDebug() {
-		// FPS tracking — always runs for stats panel
 		fpsFrames++;
 		var now = performance.now();
 		if (now - fpsLast >= 500) {
@@ -717,7 +708,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			fpsLast = now;
 		}
 
-		// Stats panel — throttled to ~1s (cluster detection is O(n²))
 		var statsEl = document.getElementById("boids-debug-stats");
 		if (statsEl && now - statsLast >= 1000) {
 			statsLast = now;
@@ -737,7 +727,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 		if (!debugOn) return;
 
-		// Re-select focus boid every ~4 seconds
 		focusTimer++;
 		if (focusIdx === -1 || focusTimer >= FOCUS_RESELECT) {
 			focusTimer = 0;
@@ -753,7 +742,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				qzTop = Math.min(hc.top, tc.top) - padY;
 				qzBottom = Math.max(hc.bottom, tc.bottom) + padY;
 			}
-			// Pick boid with the most neighbors within alignment radius
 			var bestCount = -1;
 			focusIdx = 0;
 			for (var i = 0; i < boids.length; i++) {
@@ -770,7 +758,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		}
 		var fb = boids[focusIdx];
 
-		// Draw rule-radius circles
 		var circles = [
 			{ r: SEP_RADIUS, color: "rgba(255,120,80,0.35)", label: "separation" },
 			{ r: ALIGN_RADIUS, color: "rgba(255,220,80,0.3)", label: "alignment" },
@@ -783,7 +770,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			ctx.strokeStyle = ci.color;
 			ctx.lineWidth = 1;
 			ctx.stroke();
-			// Fade labels out over 4 seconds
 			if (debugLabelsAlpha > 0.01) {
 				ctx.fillStyle = ci.color.replace("0.3", String(0.7 * debugLabelsAlpha));
 				ctx.font = "10px monospace";
@@ -792,7 +778,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		}
 		if (debugLabelsAlpha > 0.01) debugLabelsAlpha *= 0.995;
 
-		// Draw neighbor connection lines
 		ctx.lineWidth = 0.5;
 		for (var j = 0; j < boids.length; j++) {
 			if (j === focusIdx) continue;
@@ -830,7 +815,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 	function setHeroVisible(visible) {
 		heroVisible = visible;
-		if (visible) { resize(); start(); }
+		if (visible && isDesktop()) { resize(); start(); }
 		else stop();
 	}
 
@@ -857,28 +842,111 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		if (socials) socials.classList.toggle("is-shifted", !statsVisible);
 	}
 
-	resize();
-	createBoids();
-	start();
+	// ── Teardown: cancel rAF, remove listeners, disconnect observers ──
+	function teardown() {
+		stop();
+		boids = [];
+		flocks = [];
+		if (onMouseMove) { window.removeEventListener("mousemove", onMouseMove); onMouseMove = null; }
+		if (onMouseLeave) { window.removeEventListener("mouseleave", onMouseLeave); onMouseLeave = null; }
+		if (onResize) { window.removeEventListener("resize", onResize); onResize = null; }
+		if (onVisibilityChange) { document.removeEventListener("visibilitychange", onVisibilityChange); onVisibilityChange = null; }
+		if (heroIo) { heroIo.disconnect(); heroIo = null; }
+		if (boidsInfo) boidsInfo = null;
+		if (boidsStats) boidsStats = null;
+		initialised = false;
+	}
 
-	window.addEventListener("mousemove", function (e) {
-		mouse = { x: e.clientX, y: e.clientY };
-	});
-	window.addEventListener("mouseleave", function () {
-		mouse = null;
-	});
+	// ── Init: set up listeners, observers, create boids, start ──
+	function init() {
+		if (initialised) return;
+		initialised = true;
 
-	window.addEventListener("resize", function () {
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
 		resize();
 		createBoids();
-	});
 
-	document.addEventListener("visibilitychange", function () {
-		if (document.hidden) stop();
-		else { resize(); start(); }
-	});
+		onMouseMove = function (e) { mouse = { x: e.clientX, y: e.clientY }; };
+		onMouseLeave = function () { mouse = null; };
+		onResize = function () { resize(); createBoids(); };
+		onVisibilityChange = function () {
+			if (document.hidden) stop();
+			else { resize(); start(); }
+		};
 
-	// Debug toggle listener (dev only)
+		window.addEventListener("mousemove", onMouseMove);
+		window.addEventListener("mouseleave", onMouseLeave);
+		window.addEventListener("resize", onResize);
+		document.addEventListener("visibilitychange", onVisibilityChange);
+
+		// Initialize debug UI to active state on load (dev only)
+		(function () {
+			var btn = document.getElementById("boids-debug-btn");
+			var stats = document.getElementById("boids-debug-stats");
+			if (!stats) {
+				stats = document.createElement("div");
+				stats.id = "boids-debug-stats";
+
+				var header = document.createElement("div");
+				header.className = "boids-stats-header";
+				var dot = document.createElement("span");
+				dot.className = "boids-stats-dot";
+				header.appendChild(dot);
+				header.appendChild(document.createTextNode("Simulation Stats"));
+
+				var resetBtn = document.createElement("button");
+				resetBtn.className = "boids-reset-btn";
+				resetBtn.type = "button";
+				resetBtn.title = "Reset simulation";
+				resetBtn.setAttribute("aria-label", "Reset simulation");
+				resetBtn.innerHTML = "&#x21bb;";
+				header.appendChild(resetBtn);
+
+				var values = document.createElement("div");
+				values.className = "boids-stats-values";
+
+				stats.appendChild(header);
+				stats.appendChild(values);
+
+				var landing = document.getElementById("landing-container");
+				(landing || document.body).appendChild(stats);
+			}
+			if (btn && isDev) {
+				btn.classList.add("is-active");
+				btn.setAttribute("aria-pressed", "true");
+			}
+			if (stats) stats.style.display = isDev ? "block" : "none";
+
+			var resetBtnEl = stats.querySelector(".boids-reset-btn");
+			if (resetBtnEl) {
+				resetBtnEl.addEventListener("click", function (e) {
+					e.stopPropagation();
+					resetSimulation();
+					if (!statsVisible) toggleStats();
+				});
+			}
+		})();
+
+		// Hero visibility: pause animation & hide overlays when scrolled out
+		if ("IntersectionObserver" in window) {
+			boidsInfo = document.getElementById("boids-info");
+			boidsStats = document.getElementById("boids-debug-stats");
+			heroIo = new IntersectionObserver(function (entries) {
+				entries.forEach(function (entry) {
+					var vis = entry.isIntersecting;
+					setHeroVisible(vis);
+					if (boidsInfo) boidsInfo.classList.toggle("is-hidden", !vis);
+					if (boidsStats) boidsStats.classList.toggle("is-hidden", !vis);
+				});
+			}, { threshold: 0.1 });
+			heroIo.observe(canvas.parentElement);
+		}
+
+		start();
+	}
+
+	// Debug toggle listener (dev only — attached once, guarded by isDev)
 	document.addEventListener("boids-debug-toggle", function () {
 		if (!isDev) return;
 		debugOn = !debugOn;
@@ -893,74 +961,39 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		toggleStats();
 	});
 
-	// Initialize debug UI to active state on load (dev only)
-	(function () {
-		var btn = document.getElementById("boids-debug-btn");
-		var stats = document.getElementById("boids-debug-stats");
-		if (!stats) {
-			stats = document.createElement("div");
-			stats.id = "boids-debug-stats";
-
-			var header = document.createElement("div");
-			header.className = "boids-stats-header";
-			var dot = document.createElement("span");
-			dot.className = "boids-stats-dot";
-			header.appendChild(dot);
-			header.appendChild(document.createTextNode("Simulation Stats"));
-
-			var resetBtn = document.createElement("button");
-			resetBtn.className = "boids-reset-btn";
-			resetBtn.type = "button";
-			resetBtn.title = "Reset simulation";
-			resetBtn.setAttribute("aria-label", "Reset simulation");
-			resetBtn.innerHTML = "&#x21bb;";
-			header.appendChild(resetBtn);
-
-			var values = document.createElement("div");
-			values.className = "boids-stats-values";
-
-			stats.appendChild(header);
-			stats.appendChild(values);
-
-			var landing = document.getElementById("landing-container");
-			(landing || document.body).appendChild(stats);
-		}
-		if (btn && isDev) {
-			btn.classList.add("is-active");
-			btn.setAttribute("aria-pressed", "true");
-		}
-		if (stats) stats.style.display = isDev ? "block" : "none";
-
-		var resetBtnEl = stats.querySelector(".boids-reset-btn");
-		if (resetBtnEl) {
-			resetBtnEl.addEventListener("click", function (e) {
-				e.stopPropagation();
-				resetSimulation();
-				if (!statsVisible) toggleStats();
-			});
-		}
-	})();
-
-	// Hero visibility: pause animation & hide overlays when scrolled out
-	if ("IntersectionObserver" in window) {
-		var boidsInfo = document.getElementById("boids-info");
-		var boidsStats = document.getElementById("boids-debug-stats");
-		var heroIo = new IntersectionObserver(function (entries) {
-			entries.forEach(function (entry) {
-				var vis = entry.isIntersecting;
-				setHeroVisible(vis);
-				if (boidsInfo) boidsInfo.classList.toggle("is-hidden", !vis);
-				if (boidsStats) boidsStats.classList.toggle("is-hidden", !vis);
-			});
-		}, { threshold: 0.1 });
-		heroIo.observe(canvas.parentElement);
+	// ── Viewport gate: start on desktop, teardown on mobile ──
+	if (isDesktop()) {
+		canvas.style.display = "";
+		if (fallback) fallback.style.display = "none";
+		init();
+	} else {
+		canvas.style.display = "none";
+		if (fallback) fallback.style.display = "block";
 	}
+
+	// Listen for resizes crossing the breakpoint
+	var wasDesktop = isDesktop();
+	window.addEventListener("resize", function () {
+		var nowDesktop = isDesktop();
+		if (nowDesktop === wasDesktop) return;
+		wasDesktop = nowDesktop;
+		if (nowDesktop) {
+			canvas.style.display = "";
+			if (fallback) fallback.style.display = "none";
+			init();
+		} else {
+			canvas.style.display = "none";
+			if (fallback) fallback.style.display = "block";
+			teardown();
+		}
+	});
 })();
 
 // =============================================================
-// Boids info tooltip
+// Boids info tooltip — desktop only
 // =============================================================
 (function () {
+	if (window.innerWidth < 1024) return;
 	var btn = document.getElementById("boids-info-btn");
 	var tip = document.getElementById("boids-info-tooltip");
 	if (!btn || !tip) return;
