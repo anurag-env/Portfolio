@@ -42,8 +42,8 @@ window.__researchPapers = [
       { value: "Context-Aware Modeling" },
     ],
     links: {
-      publication: "https://doi.org/10.1007/978-3-031-XXXXX-X",
-      code: "https://github.com/anurag-env",
+      publication: "https://nlpir.net/",
+      code: "https://github.com/Devesh-Singh-23/Text_Sentiment_Classification",
     },
     bibtex:
       '@inproceedings{singh2026roberta,\n  title     = {RoBERTa-Driven Transformer Framework for Context-Aware Sentiment Classification of Social Media Text},\n  author    = {Singh, Anurag and others},\n  booktitle = {Proc. International Conference on Natural Language Processing and Information Retrieval (NLPIR)},\n  year      = {2026},\n  publisher = {Springer},\n  series    = {LNNS}\n}',

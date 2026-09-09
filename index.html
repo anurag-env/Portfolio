@@ -114,6 +114,7 @@
 			style="background-image: url(&quot;images/hero7.jpg&quot;); background-position: center 5%; opacity: 1;">
 		</div>
 			<div class="landing-overlay" aria-hidden="true"></div>
+		<canvas id="boids-canvas" aria-hidden="true"></canvas>
 			<div class="container landing-content" id="landing-header">
 				<h1 id="heading-name" style="opacity: 1;">Anurag Singh</h1>
 				<h3 id="heading-title" style="opacity: 1;">
@@ -121,16 +122,35 @@
 					<span class="heading-subtitle">Natural Language Processing · Deep Learning</span>
 				</h3>
 			</div>
+			<div class="container landing-content" id="landing-cta" style="opacity: 1;">
+				<div class="landing-cta-group">
+					<a href="#projects" class="landing-cta-btn">View Work</a>
+					<a href="./Anurag_Singh_Resume.pdf" target="_blank" class="landing-cta-btn">View Resume</a>
+				</div>
+			</div>
 			<div class="container landing-content" id="landing-footer" style="opacity: 1;">
 				<button type="button" id="landing-chevron-btn" aria-label="Scroll to content">
 					<i class="fas fa-chevron-down" id="landing-chevron" aria-hidden="true"></i>
 				</button>
 			</div>
+			<div class="container landing-content" id="landing-socials" style="opacity: 1;">
+				<a href="https://github.com/anurag-env" target="_blank" rel="noopener" aria-label="GitHub" class="social-icon"><i class="fab fa-github"></i></a>
+				<a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+				<a href="mailto:anuragsingh.eu@gmail.com" aria-label="Gmail" class="social-icon"><i class="fas fa-envelope"></i></a>
+			</div>
+			<div id="boids-info">
+			<button id="boids-debug-btn" aria-label="Toggle algorithm debug view" aria-pressed="true" class="is-active">&lt;/&gt;</button>
+			<button id="boids-info-btn" aria-label="About this background" aria-expanded="true">i</button>
+			<div id="boids-info-tooltip" role="tooltip" aria-hidden="false" class="is-open">
+				<h4>About this background</h4>
+				<p>A real-time flocking simulation using the Boids algorithm (Craig Reynolds, 1986). ~100 agents follow 3 local rules — separation, alignment, cohesion — producing emergent group behavior with no central control. Built with vanilla JavaScript and HTML5 Canvas, no animation libraries.</p>
+			</div>
+		</div>
 		</div>
 		<div class="row" id="details-container">
 			<div class="col-2">
 			<nav class="sticky-top" id="side-nav" aria-label="Section navigation">
-				<button id="theme-toggle" aria-label="Toggle dark mode">
+				<button id="theme-toggle" aria-label="Toggle dark mode" data-tooltip="Dark mode">
 					<i class="fas fa-moon"></i>
 				</button>
 				<div class="row side-nav-picture">
@@ -523,20 +543,10 @@
 					<div class="projects-grid">
 						<details class="project-card project-card-featured">
 							<summary><span class="project-icon project-icon-featured"><i class="fas fa-smile" aria-hidden="true"></i></span><span class="project-summary"><span
-										class="project-eyebrow">FEATURED · NLP</span><span class="project-title">RoBERTa Sentiment Classification</span><span class="project-outcome">First-author paper on context-aware sentiment classification of social media text using RoBERTa transformers</span><span class="project-stack"><a class="tech-tag"
-											href="https://www.python.org/" target="_blank"
-											rel="noopener">Python</a><a class="tech-tag"
-											href="https://pytorch.org/" target="_blank"
-											rel="noopener">PyTorch</a><a class="tech-tag"
-											href="https://huggingface.co/docs/transformers/" target="_blank"
-											rel="noopener">Hugging Face Transformers</a><a class="tech-tag"
-											href="https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment"
-											target="_blank" rel="noopener">RoBERTa</a><a class="tech-tag"
-											href="https://huggingface.co/docs/optimum/concept_guides/quantization"
-											target="_blank" rel="noopener">AdamW</a></span><span
+										class="project-eyebrow">FEATURED · NLP</span><span class="project-title">RoBERTa Sentiment Classification</span><span class="project-outcome">First-author paper on context-aware sentiment classification of social media text using RoBERTa transformers</span><span class="project-stack"><span class="tech-tag">Python</span><span class="tech-tag">PyTorch</span><span class="tech-tag">Hugging Face Transformers</span><span class="tech-tag">RoBERTa</span><span class="tech-tag">AdamW</span></span><span
 										class="project-metrics"><span><b>96%</b><small>accuracy</small></span><span><b>0.95</b><small>macro-F1</small></span><span><b>18K+</b><small>labeled samples</small></span></span></span><a class="project-github"
-									href="https://github.com/anurag-env" target="_blank" rel="noopener"
-									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
+									href="https://github.com/Devesh-Singh-23/Text_Sentiment_Classification" target="_blank" rel="noopener"
+									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="View on GitHub"><i
 										class="fab fa-github" aria-hidden="true"></i></a><i
 									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
@@ -547,21 +557,10 @@
 							<summary><span class="project-icon"><i class="fas fa-database" aria-hidden="true"></i></span><span class="project-summary"><span
 										class="project-eyebrow">NLP</span><span class="project-title">NL2SQL:
 										Text-to-SQL Model</span><span class="project-outcome">Natural language to SQL
-										generation with T5-small</span><span class="project-stack"><a class="tech-tag"
-											href="https://www.python.org/" target="_blank" rel="noopener">Python</a><a
-											class="tech-tag"
-											href="https://huggingface.co/docs/transformers/model_doc/t5" target="_blank"
-											rel="noopener">T5</a><a class="tech-tag"
-											href="https://huggingface.co/docs/peft/" target="_blank"
-											rel="noopener">QLoRA</a><a class="tech-tag"
-											href="https://github.com/salesforce/WikiSQL" target="_blank"
-											rel="noopener">WikiSQL</a></span><span
+										generation with T5-small</span><span class="project-stack"><span class="tech-tag">Python</span><span class="tech-tag">T5</span><span class="tech-tag">QLoRA</span><span class="tech-tag">WikiSQL</span></span><span
 										class="project-metrics"><span><b>80K+</b><small>query
 												pairs</small></span><span><b>4GB</b><small>VRAM
-												budget</small></span></span></span><a class="project-github"
-									href="https://github.com/anurag-env" target="_blank" rel="noopener"
-									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
-										class="fab fa-github" aria-hidden="true"></i></a><i
+												budget</small></span></span></span><i
 									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
 								<p>Fine-tuned T5-small for text-to-SQL generation on WikiSQL, using QLoRA to keep
@@ -572,20 +571,12 @@
 							<summary><span class="project-icon"><i class="fas fa-book-open" aria-hidden="true"></i></span><span class="project-summary"><span
 										class="project-eyebrow">RAG</span><span class="project-title">Pragya: Local RAG
 										Research Assistant</span><span class="project-outcome">Local research assistance
-										with CPU-friendly retrieval</span><span class="project-stack"><a
-											class="tech-tag" href="https://www.llama.com/" target="_blank"
-											rel="noopener">Llama3</a><a class="tech-tag"
-											href="https://www.trychroma.com/" target="_blank"
-											rel="noopener">ChromaDB</a><a class="tech-tag"
-											href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2"
-											target="_blank" rel="noopener">MiniLM</a><a class="tech-tag"
-											href="https://streamlit.io/" target="_blank"
-											rel="noopener">Streamlit</a></span><span
+										with CPU-friendly retrieval</span><span class="project-stack"><span class="tech-tag">Llama3</span><span class="tech-tag">ChromaDB</span><span class="tech-tag">MiniLM</span><span class="tech-tag">Streamlit</span></span><span
 										class="project-metrics"><span><b>&lt;400ms</b><small>mean
 												latency</small></span><span><b>0</b><small>cloud
 												services</small></span></span></span><a class="project-github"
-									href="https://github.com/anurag-env" target="_blank" rel="noopener"
-									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
+									href="https://github.com/Devesh-Singh-23/Pragya" target="_blank" rel="noopener"
+									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="View on GitHub"><i
 										class="fab fa-github" aria-hidden="true"></i></a><i
 									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
@@ -596,18 +587,10 @@
 						</details>
 						<details class="project-card">
 							<summary><span class="project-icon"><i class="fas fa-pen-nib" aria-hidden="true"></i></span><span class="project-summary"><span
-										class="project-eyebrow">Generative AI</span><span class="project-title">AI Research Paper Writer</span><span class="project-outcome">Automated research paper generation with LLM pipelines</span><span class="project-stack"><a
-											class="tech-tag" href="https://www.python.org/" target="_blank"
-											rel="noopener">Python</a><a class="tech-tag"
-											href="https://platform.openai.com/" target="_blank"
-											rel="noopener">OpenAI API</a><a class="tech-tag"
-											href="https://www.deepseek.com/" target="_blank"
-											rel="noopener">DeepSeek</a><a class="tech-tag"
-											href="https://quickchart.io/" target="_blank"
-											rel="noopener">QuickChart</a></span><span
+										class="project-eyebrow">Generative AI</span><span class="project-title">AI Research Paper Writer</span><span class="project-outcome">									Automated research paper generation with LLM pipelines</span><span class="project-stack"><span class="tech-tag">Python</span><span class="tech-tag">OpenAI API</span><span class="tech-tag">DeepSeek</span><span class="tech-tag">QuickChart</span></span><span
 										class="project-metrics"><span><b>10+</b><small>pipeline modules</small></span><span><b>Real-time</b><small>streaming output</small></span></span></span><a class="project-github"
 									href="https://github.com/anurag-env" target="_blank" rel="noopener"
-									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
+									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="View on GitHub"><i
 										class="fab fa-github" aria-hidden="true"></i></a><i
 									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
@@ -619,18 +602,10 @@
 						</details>
 						<details class="project-card">
 							<summary><span class="project-icon"><i class="fas fa-shield-alt" aria-hidden="true"></i></span><span class="project-summary"><span
-										class="project-eyebrow">Security</span><span class="project-title">Vault: Local Password Manager</span><span class="project-outcome">Fully local, zero-cloud encrypted credential storage</span><span class="project-stack"><a
-											class="tech-tag" href="https://www.electronjs.org/" target="_blank"
-											rel="noopener">Electron</a><a class="tech-tag"
-											href="https://nodejs.org/" target="_blank"
-											rel="noopener">Node.js</a><a class="tech-tag"
-											href="https://www.sqlite.org/" target="_blank"
-											rel="noopener">SQLite</a><a class="tech-tag"
-											href="https://argon2.online/" target="_blank"
-											rel="noopener">Argon2id</a></span><span
+										class="project-eyebrow">Security</span><span class="project-title">Vault: Local Password Manager</span><span class="project-outcome">									Fully local, zero-cloud encrypted credential storage</span><span class="project-stack"><span class="tech-tag">Electron</span><span class="tech-tag">Node.js</span><span class="tech-tag">SQLite</span><span class="tech-tag">Argon2id</span></span><span
 										class="project-metrics"><span><b>AES-256</b><small>encryption</small></span><span><b>0</b><small>network calls</small></span></span></span><a class="project-github"
-									href="https://github.com/anurag-env" target="_blank" rel="noopener"
-									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="GitHub profile"><i
+									href="https://github.com/anurag-env/Vault" target="_blank" rel="noopener"
+									aria-label="Open Anurag Singh's GitHub profile" data-tooltip="View on GitHub"><i
 										class="fab fa-github" aria-hidden="true"></i></a><i
 									class="fas fa-chevron-down project-toggle" aria-hidden="true"></i></summary>
 							<div class="project-details">
@@ -638,6 +613,32 @@
 									and AES-256-GCM authenticated encryption. Implemented SQLite with WAL checkpointing
 									for durable storage, designed with strict security architecture: no network calls,
 									no telemetry, minimal attack surface.</p>
+							</div>
+						</details>
+						<details class="project-card">
+							<summary>
+								<span class="project-icon"><i class="fas fa-dove" aria-hidden="true"></i></span>
+								<span class="project-summary">
+									<span class="project-eyebrow">Simulation</span>
+									<span class="project-title">Emergent Flocking Simulation (Boids Algorithm)</span>
+									<span class="project-outcome">Real-time multi-agent flocking powering this site's own hero background</span>
+									<span class="project-stack">
+										<span class="tech-tag">JavaScript</span>
+										<span class="tech-tag">HTML5 Canvas</span>
+										<span class="tech-tag">Algorithms</span>
+										<span class="tech-tag">requestAnimationFrame</span>
+									</span>
+									<span class="project-metrics">
+										<span><b>~100</b><small>agents</small></span>
+										<span><b>4</b><small>flocks</small></span>
+										<span><b>60fps</b><small>target</small></span>
+									</span>
+								</span>
+								<a class="project-live-link" href="#landing-container" data-tooltip="See it in action">View Live</a>
+								<i class="fas fa-chevron-down project-toggle" aria-hidden="true"></i>
+							</summary>
+							<div class="project-details">
+								<p>Implemented Craig Reynolds' Boids algorithm (1986) from scratch in vanilla JavaScript with zero dependencies. Each of ~100 agents follows three local rules — separation, alignment, cohesion — producing emergent flocking behavior with no central controller. Extended with per-boid persistent coloring (HSL-assigned at spawn), mouse-reactive scatter response, density-limiting to prevent over-clustering, and multi-flock support with dynamic split/merge as boids drift between groups.</p>
 							</div>
 						</details>
 					</div>
@@ -836,6 +837,15 @@
 								platform for early wheat disease detection that fuses satellite imagery, drone
 								surveillance, and farmer-uploaded leaf images to generate real-time disease-risk maps
 								and predictive advisories.</p>
+						</div>
+					</div>
+					<div class="container">
+						<div class="row">
+							<div class="col-9 achievement-title"><b>Soft Computing Workshop — Organizer & Participant</b></div>
+							<div class="col-3 achievement-date">2025</div>
+						</div>
+						<div class="row achievement-content">
+							<p>The State-Level Five-Day Skill Development Programme on Soft Computing and Applications, organized by the School of Computer Science and Engineering, SMVDU, under RP-128, held 3rd–7th February 2025. Received a Certificate of Appreciation for organizing contributions and a Certificate of Participation for the programme.</p>
 						</div>
 					</div>
 					<!-- Previous recognition list retained only as source markup; hidden while the resume-based achievements above are shown.

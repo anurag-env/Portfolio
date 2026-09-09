@@ -3,7 +3,17 @@
 // =============================================================
 $(document).ready(function () {
 	$("#landing-chevron-btn").click(function () {
-		$("html,body").animate({ scrollTop: $("#details-container").offset().top }, "slow");
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			$("html,body").animate({ scrollTop: $("#details-container").offset().top }, "slow");
+			return;
+		}
+		var $hero = $("#landing-container");
+		$hero.addClass("hero-lift");
+		setTimeout(function () {
+			$("html,body").animate({ scrollTop: $("#details-container").offset().top }, "slow", function () {
+				$hero.removeClass("hero-lift");
+			});
+		}, 200);
 	});
 });
 
@@ -310,6 +320,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	if (localStorage.getItem(STORAGE_KEY) === "dark") {
 		body.classList.add("dark-mode");
 		icon.classList.replace("fa-moon", "fa-sun");
+		toggle.dataset.tooltip = "Light mode";
 	}
 
 	toggle.addEventListener("click", function () {
@@ -317,6 +328,631 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		var isDark = body.classList.contains("dark-mode");
 		icon.classList.toggle("fa-moon", !isDark);
 		icon.classList.toggle("fa-sun", isDark);
+		toggle.dataset.tooltip = isDark ? "Light mode" : "Dark mode";
 		localStorage.setItem(STORAGE_KEY, isDark ? "dark" : "light");
+	});
+})();
+
+// =============================================================
+// Boids flocking simulation — hero section background
+// =============================================================
+(function () {
+	var canvas = document.getElementById("boids-canvas");
+	if (!canvas) return;
+	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+	var ctx = canvas.getContext("2d");
+	var boids = [];
+	var flocks = [];
+	var animId = null;
+	var running = false;
+	var mouse = null;
+	var heroVisible = true;
+
+	// --- Flock config ---
+	var FLOCK_COUNT = 4;
+	var BOIDS_PER = 25;
+	var FEAR_RADIUS = 110;
+	var DENSITY_RADIUS = 40;
+	var DENSITY_LIMIT = 12;
+	var DENSITY_FORCE = 0.06;
+	var EXPLORE_INTERVAL = 720; // frames (~12s at 60fps)
+
+	// --- Boid behaviour ---
+	var SEP_RADIUS = 22;
+	var ALIGN_RADIUS = 90;
+	var COH_RADIUS = 90;
+	var WSEP = 1.8;
+	var WALIGN = 1.0;
+	var WCOH = 0.3;
+	var WGOAL = 0.005;
+	var WFLEE = 4.5;
+	var WDRIFT = 0.003;
+	var MAX_SPEED = 1.1;
+	var MAX_FORCE = 0.04;
+	var GOAL_SPEED = 0.15;
+	var driftAngle = Math.random() * Math.PI * 2;
+	var frameCount = 0;
+
+	// --- Debug mode ---
+	var isDev = window.location.hostname === "localhost" ||
+		window.location.hostname === "127.0.0.1" ||
+		window.location.protocol === "file:" ||
+		window.location.search.indexOf("debug=true") !== -1;
+	var debugOn = isDev;
+	var debugLabelsAlpha = 1;
+	var fpsFrames = 0;
+	var fpsLast = performance.now();
+	var fpsDisplay = 60;
+	var statsLast = 0;
+	var focusIdx = -1;
+	var focusTimer = 0;
+	var FOCUS_RESELECT = 240; // frames (~4s at 60fps)
+
+	function resize() {
+		canvas.width = canvas.offsetWidth;
+		canvas.height = canvas.offsetHeight;
+	}
+
+	function hslToRgb(h, s, l) {
+		s /= 100; l /= 100;
+		var c = (1 - Math.abs(2 * l - 1)) * s;
+		var x = c * (1 - Math.abs((h / 60) % 2 - 1));
+		var m = l - c / 2;
+		var r, g, b;
+		if (h < 60)       { r = c; g = x; b = 0; }
+		else if (h < 120) { r = x; g = c; b = 0; }
+		else if (h < 180) { r = 0; g = c; b = x; }
+		else if (h < 240) { r = 0; g = x; b = c; }
+		else if (h < 300) { r = x; g = 0; b = c; }
+		else              { r = c; g = 0; b = x; }
+		return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+	}
+
+	function createBoids() {
+		boids = [];
+		flocks = [];
+		var pad = 80;
+		// Divide canvas into a 2x2 grid — one quadrant per flock
+		var cols = 2, rows = 2;
+		var zoneW = (canvas.width - pad * 2) / cols;
+		var zoneH = (canvas.height - pad * 2) / rows;
+		for (var f = 0; f < FLOCK_COUNT; f++) {
+			var col = f % cols;
+			var row = Math.floor(f / cols);
+			// Center of this flock's quadrant
+			var gx = pad + zoneW * col + zoneW * 0.5;
+			var gy = pad + zoneH * row + zoneH * 0.5;
+			flocks.push({
+				goalX: gx, goalY: gy,
+				targetX: gx, targetY: gy,
+				wanderAngle: Math.random() * Math.PI * 2,
+				exploreTimer: Math.floor(Math.random() * EXPLORE_INTERVAL)
+			});
+			// Per-flock base hue, randomized within a ±30° band
+			var baseHue = (f / FLOCK_COUNT) * 360 + (Math.random() - 0.5) * 60;
+			var sat = 70 + Math.random() * 20;   // 70–90%
+			var lit = 55 + Math.random() * 10;   // 55–65%
+			for (var i = 0; i < BOIDS_PER; i++) {
+				var angle = Math.random() * Math.PI * 2;
+				var spd = MAX_SPEED * (0.7 + Math.random() * 0.3);
+				// Jitter each boid's hue ±12° from the flock base for natural variety
+				var h = (baseHue + (Math.random() - 0.5) * 24 + 360) % 360;
+				boids.push({
+					x: gx + (Math.random() - 0.5) * 40,
+					y: gy + (Math.random() - 0.5) * 40,
+					vx: Math.cos(angle) * spd,
+					vy: Math.sin(angle) * spd,
+					size: 4.5 + Math.random() * 3,
+					opacity: 0.45 + Math.random() * 0.25,
+					flock: f,
+					color: "hsl(" + h + "," + sat + "%," + lit + "%)",
+					colorRGB: hslToRgb(h, sat, lit)
+				});
+			}
+		}
+	}
+
+	function limit(ax, ay, max) {
+		var m = Math.sqrt(ax * ax + ay * ay);
+		if (m > max && m > 0) { ax = (ax / m) * max; ay = (ay / m) * max; }
+		return [ax, ay];
+	}
+
+	function update() {
+		frameCount++;
+		// Slowly shift global drift direction
+		driftAngle += (Math.random() - 0.5) * 0.02;
+
+		// Wander each flock's goal + periodic exploration reset
+		for (var f = 0; f < flocks.length; f++) {
+			var g = flocks[f];
+			g.exploreTimer++;
+			if (g.exploreTimer >= EXPLORE_INTERVAL) {
+				g.exploreTimer = 0;
+				g.targetX = 80 + Math.random() * (canvas.width - 160);
+				g.targetY = 80 + Math.random() * (canvas.height - 160);
+			} else {
+				g.wanderAngle += (Math.random() - 0.5) * 0.6;
+				g.targetX += Math.cos(g.wanderAngle) * GOAL_SPEED;
+				g.targetY += Math.sin(g.wanderAngle) * GOAL_SPEED;
+			}
+			// Soft clamp goal to canvas
+			if (g.targetX < -50) g.targetX = canvas.width * 0.5;
+			if (g.targetX > canvas.width + 50) g.targetX = canvas.width * 0.5;
+			if (g.targetY < -50) g.targetY = canvas.height * 0.5;
+			if (g.targetY > canvas.height + 50) g.targetY = canvas.height * 0.5;
+			// Ease goal
+			g.goalX += (g.targetX - g.goalX) * 0.005;
+			g.goalY += (g.targetY - g.goalY) * 0.005;
+		}
+
+		for (var i = 0; i < boids.length; i++) {
+			var b = boids[i];
+			var sx = 0, sy = 0, sc = 0;   // separation
+			var ax = 0, ay = 0, ac = 0;   // alignment
+			var cx = 0, cy = 0, cc = 0;   // cohesion
+			var nearby = 0;               // density count
+
+			for (var j = 0; j < boids.length; j++) {
+				if (i === j) continue;
+				var o = boids[j];
+				var dx = b.x - o.x;
+				var dy = b.y - o.y;
+				var d = Math.sqrt(dx * dx + dy * dy);
+
+				// Separation: same flock only
+				if (o.flock === b.flock && d < SEP_RADIUS && d > 0) {
+					sx += dx / d; sy += dy / d; sc++;
+				}
+				// Alignment & cohesion: ALL nearby boids regardless of flock
+				if (d < ALIGN_RADIUS) { ax += o.vx; ay += o.vy; ac++; }
+				if (d < COH_RADIUS) { cx += o.x; cy += o.y; cc++; }
+				// Density: count boids in small radius (all flocks)
+				if (d < DENSITY_RADIUS) nearby++;
+			}
+
+			var fx = 0, fy = 0;
+
+			// Separation
+			if (sc > 0) {
+				sx /= sc; sy /= sc;
+				var sm = Math.sqrt(sx * sx + sy * sy);
+				if (sm > 0) { sx = (sx / sm) * MAX_SPEED - b.vx; sy = (sy / sm) * MAX_SPEED - b.vy; }
+				var sl = limit(sx, sy, MAX_FORCE);
+				fx += sl[0] * WSEP; fy += sl[1] * WSEP;
+			}
+
+			// Density limit — extra separation when too crowded
+			if (nearby > DENSITY_LIMIT) {
+				var densityPush = (nearby - DENSITY_LIMIT) * DENSITY_FORCE;
+				// Push away from center of local mass
+				var dxAll = 0, dyAll = 0, dCount = 0;
+				for (var j = 0; j < boids.length; j++) {
+					if (i === j) continue;
+					var o = boids[j];
+					var ddx = b.x - o.x;
+					var ddy = b.y - o.y;
+					var dd = Math.sqrt(ddx * ddx + ddy * ddy);
+					if (dd < DENSITY_RADIUS && dd > 0) {
+						dxAll += ddx / dd; dyAll += ddy / dd; dCount++;
+					}
+				}
+				if (dCount > 0) {
+					dxAll /= dCount; dyAll /= dCount;
+					var dm = Math.sqrt(dxAll * dxAll + dyAll * dyAll) || 1;
+					fx += (dxAll / dm) * densityPush;
+					fy += (dyAll / dm) * densityPush;
+				}
+			}
+
+			// Alignment (ALL nearby boids)
+			if (ac > 0) {
+				ax /= ac; ay /= ac;
+				var am = Math.sqrt(ax * ax + ay * ay);
+				if (am > 0) { ax = (ax / am) * MAX_SPEED - b.vx; ay = (ay / am) * MAX_SPEED - b.vy; }
+				var al = limit(ax, ay, MAX_FORCE);
+				fx += al[0] * WALIGN; fy += al[1] * WALIGN;
+			}
+
+			// Cohesion (ALL nearby boids)
+			if (cc > 0) {
+				cx = cx / cc - b.x; cy = cy / cc - b.y;
+				var cm = Math.sqrt(cx * cx + cy * cy);
+				if (cm > 0) { cx = (cx / cm) * MAX_SPEED - b.vx; cy = (cy / cm) * MAX_SPEED - b.vy; }
+				var cl = limit(cx, cy, MAX_FORCE);
+				fx += cl[0] * WCOH; fy += cl[1] * WCOH;
+			}
+
+			// Goal-seeking (wander with flock)
+			var fg = flocks[b.flock];
+			var gdx = fg.goalX - b.x;
+			var gdy = fg.goalY - b.y;
+			var gd = Math.sqrt(gdx * gdx + gdy * gdy);
+			if (gd > 1) {
+				var gSteerX = (gdx / gd) * MAX_SPEED - b.vx;
+				var gSteerY = (gdy / gd) * MAX_SPEED - b.vy;
+				var gl = limit(gSteerX, gSteerY, MAX_FORCE);
+				fx += gl[0] * WGOAL; fy += gl[1] * WGOAL;
+			}
+
+			// Global drift
+			fx += Math.cos(driftAngle) * WDRIFT;
+			fy += Math.sin(driftAngle) * WDRIFT;
+
+			// Mouse fear / scatter
+			if (mouse) {
+				var mdx = b.x - mouse.x;
+				var mdy = b.y - mouse.y;
+				var md = Math.sqrt(mdx * mdx + mdy * mdy);
+				if (md < FEAR_RADIUS && md > 0) {
+					var strength = (1 - md / FEAR_RADIUS) * WFLEE;
+					fx += (mdx / md) * strength;
+					fy += (mdy / md) * strength;
+				}
+			}
+
+			// Apply
+			b.vx += fx; b.vy += fy;
+			var spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+			if (spd > MAX_SPEED) { b.vx = (b.vx / spd) * MAX_SPEED; b.vy = (b.vy / spd) * MAX_SPEED; }
+
+			// Periodic random perturbation
+			if (Math.random() < 0.003) {
+				b.vx += (Math.random() - 0.5) * 0.15;
+				b.vy += (Math.random() - 0.5) * 0.15;
+			}
+
+			b.x += b.vx; b.y += b.vy;
+
+			// Wrap edges
+			if (b.x < -8) b.x = canvas.width + 8;
+			else if (b.x > canvas.width + 8) b.x = -8;
+			if (b.y < -8) b.y = canvas.height + 8;
+			else if (b.y > canvas.height + 8) b.y = -8;
+		}
+	}
+
+	function draw() {
+		ctx.fillStyle = "#0d0d0d";
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+		for (var i = 0; i < boids.length; i++) {
+			var b = boids[i];
+			var angle = Math.atan2(b.vy, b.vx);
+			var s = b.size;
+			var rgb = b.colorRGB;
+
+			ctx.save();
+			ctx.translate(b.x, b.y);
+			ctx.rotate(angle);
+			ctx.beginPath();
+			ctx.moveTo(s * 2, 0);
+			ctx.lineTo(-s, -s * 0.65);
+			ctx.lineTo(-s * 0.5, 0);
+			ctx.lineTo(-s, s * 0.65);
+			ctx.closePath();
+			ctx.fillStyle = "rgba(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "," + b.opacity + ")";
+			ctx.fill();
+			ctx.restore();
+		}
+	}
+
+	function detectClusters() {
+		var EPS = COH_RADIUS;        // 90px — neighborhood radius
+		var EPS_SQ = EPS * EPS;
+		var MIN_PTS = 3;             // core-point threshold
+		var n = boids.length;
+
+		// Pre-compute neighbor lists (O(n²))
+		var neighbors = [];
+		for (var i = 0; i < n; i++) {
+			neighbors[i] = [];
+			for (var j = 0; j < n; j++) {
+				if (i === j) continue;
+				var dx = boids[i].x - boids[j].x;
+				var dy = boids[i].y - boids[j].y;
+				if (dx * dx + dy * dy < EPS_SQ) neighbors[i].push(j);
+			}
+		}
+
+		// DBSCAN: label each point as CORE, BORDER, or NOISE
+		var CORE = 1, BORDER = 2, NOISE = 3;
+		var pointType = [];
+		for (var i = 0; i < n; i++) {
+			pointType[i] = neighbors[i].length >= MIN_PTS ? CORE : NOISE;
+		}
+
+		// Noise points that are within EPS of a core point become BORDER
+		for (var i = 0; i < n; i++) {
+			if (pointType[i] !== NOISE) continue;
+			for (var k = 0; k < neighbors[i].length; k++) {
+				if (pointType[neighbors[i][k]] === CORE) { pointType[i] = BORDER; break; }
+			}
+		}
+
+		// Grow clusters from unvisited core points via BFS
+		var visited = [];
+		var clusterSizes = [];
+
+		for (var i = 0; i < n; i++) {
+			if (visited[i] || pointType[i] !== CORE) continue;
+			// BFS from this core point
+			var size = 0;
+			var queue = [i];
+			visited[i] = true;
+			while (queue.length > 0) {
+				var cur = queue.shift();
+				size++;
+				if (pointType[cur] === NOISE) continue;
+				// CORE or BORDER: claim neighbors
+				for (var k = 0; k < neighbors[cur].length; k++) {
+					var nb = neighbors[cur][k];
+					if (!visited[nb]) {
+						visited[nb] = true;
+						if (pointType[nb] !== NOISE) queue.push(nb);
+					}
+				}
+			}
+			if (size > 0) clusterSizes.push(size);
+		}
+
+		// Count singletons (unvisited = no core point reachable)
+		for (var i = 0; i < n; i++) {
+			if (!visited[i]) clusterSizes.push(1);
+		}
+
+		clusterSizes.sort(function (a, b) { return a - b; });
+		return { count: clusterSizes.length, sizes: clusterSizes };
+	}
+
+	function drawDebug() {
+		// FPS tracking — always runs for stats panel
+		fpsFrames++;
+		var now = performance.now();
+		if (now - fpsLast >= 500) {
+			fpsDisplay = Math.round(fpsFrames / ((now - fpsLast) / 1000));
+			fpsFrames = 0;
+			fpsLast = now;
+		}
+
+		// Stats panel — throttled to ~1s (cluster detection is O(n²))
+		var statsEl = document.getElementById("boids-debug-stats");
+		if (statsEl && now - statsLast >= 1000) {
+			statsLast = now;
+			var clusters = detectClusters();
+			var sizes = clusters.sizes;
+			var largest = sizes.length > 0 ? sizes[sizes.length - 1] : 0;
+			var median = sizes.length > 0 ? sizes[Math.floor(sizes.length / 2)] : 0;
+			statsEl.textContent =
+				"boids: " + boids.length +
+				"\nflocks: " + clusters.count +
+				"\nlargest: " + largest + "  median: " + median +
+				"\nfps: " + fpsDisplay;
+		}
+
+		if (!debugOn) return;
+
+		// Re-select focus boid every ~4 seconds
+		focusTimer++;
+		if (focusIdx === -1 || focusTimer >= FOCUS_RESELECT) {
+			focusTimer = 0;
+			var heading = document.getElementById("heading-name");
+			var title = document.getElementById("heading-title");
+			var qzLeft = 0, qzRight = 0, qzTop = 0, qzBottom = 0;
+			if (heading) {
+				var hc = heading.getBoundingClientRect();
+				var tc = title ? title.getBoundingClientRect() : hc;
+				var padX = 120, padY = 70;
+				qzLeft = hc.left - padX;
+				qzRight = hc.right + padX;
+				qzTop = Math.min(hc.top, tc.top) - padY;
+				qzBottom = Math.max(hc.bottom, tc.bottom) + padY;
+			}
+			// Pick boid with the most neighbors within alignment radius
+			var bestCount = -1;
+			focusIdx = 0;
+			for (var i = 0; i < boids.length; i++) {
+				var bx = boids[i].x, by = boids[i].y;
+				if (heading && bx > qzLeft && bx < qzRight && by > qzTop && by < qzBottom) continue;
+				var count = 0;
+				for (var j = 0; j < boids.length; j++) {
+					if (i === j) continue;
+					var ddx = bx - boids[j].x, ddy = by - boids[j].y;
+					if (ddx * ddx + ddy * ddy < ALIGN_RADIUS * ALIGN_RADIUS) count++;
+				}
+				if (count > bestCount) { bestCount = count; focusIdx = i; }
+			}
+		}
+		var fb = boids[focusIdx];
+
+		// Draw rule-radius circles
+		var circles = [
+			{ r: SEP_RADIUS, color: "rgba(255,120,80,0.35)", label: "separation" },
+			{ r: ALIGN_RADIUS, color: "rgba(255,220,80,0.3)", label: "alignment" },
+			{ r: COH_RADIUS, color: "rgba(80,200,255,0.3)", label: "cohesion" }
+		];
+		for (var c = 0; c < circles.length; c++) {
+			var ci = circles[c];
+			ctx.beginPath();
+			ctx.arc(fb.x, fb.y, ci.r, 0, Math.PI * 2);
+			ctx.strokeStyle = ci.color;
+			ctx.lineWidth = 1;
+			ctx.stroke();
+			// Fade labels out over 4 seconds
+			if (debugLabelsAlpha > 0.01) {
+				ctx.fillStyle = ci.color.replace("0.3", String(0.7 * debugLabelsAlpha));
+				ctx.font = "10px monospace";
+				ctx.fillText(ci.label, fb.x + ci.r + 4, fb.y + 3);
+			}
+		}
+		if (debugLabelsAlpha > 0.01) debugLabelsAlpha *= 0.995;
+
+		// Draw neighbor connection lines
+		ctx.lineWidth = 0.5;
+		for (var j = 0; j < boids.length; j++) {
+			if (j === focusIdx) continue;
+			var o = boids[j];
+			var dx = fb.x - o.x, dy = fb.y - o.y;
+			var d = Math.sqrt(dx * dx + dy * dy);
+			if (d < COH_RADIUS) {
+				var alpha = 0.25 * (1 - d / COH_RADIUS);
+				ctx.beginPath();
+				ctx.moveTo(fb.x, fb.y);
+				ctx.lineTo(o.x, o.y);
+				ctx.strokeStyle = "rgba(100,200,255," + alpha + ")";
+				ctx.stroke();
+			}
+		}
+	}
+
+	function frame() {
+		update();
+		draw();
+		drawDebug();
+		if (running) animId = requestAnimationFrame(frame);
+	}
+
+	function start() {
+		if (running || !heroVisible) return;
+		running = true;
+		frame();
+	}
+
+	function stop() {
+		running = false;
+		if (animId) { cancelAnimationFrame(animId); animId = null; }
+	}
+
+	function setHeroVisible(visible) {
+		heroVisible = visible;
+		if (visible) { resize(); start(); }
+		else stop();
+	}
+
+	resize();
+	createBoids();
+	start();
+
+	window.addEventListener("mousemove", function (e) {
+		mouse = { x: e.clientX, y: e.clientY };
+	});
+	window.addEventListener("mouseleave", function () {
+		mouse = null;
+	});
+
+	window.addEventListener("resize", function () {
+		resize();
+		createBoids();
+	});
+
+	document.addEventListener("visibilitychange", function () {
+		if (document.hidden) stop();
+		else { resize(); start(); }
+	});
+
+	// Debug toggle listener (dev only)
+	document.addEventListener("boids-debug-toggle", function () {
+		if (!isDev) return;
+		debugOn = !debugOn;
+		debugLabelsAlpha = 1;
+		var btn = document.getElementById("boids-debug-btn");
+		var stats = document.getElementById("boids-debug-stats");
+		if (btn) {
+			btn.classList.toggle("is-active", debugOn);
+			btn.setAttribute("aria-pressed", String(debugOn));
+		}
+		if (stats) stats.style.display = debugOn ? "block" : "none";
+	});
+
+	// Initialize debug UI to active state on load (dev only)
+	(function () {
+		var btn = document.getElementById("boids-debug-btn");
+		var stats = document.getElementById("boids-debug-stats");
+		if (!stats) {
+			stats = document.createElement("div");
+			stats.id = "boids-debug-stats";
+			var landing = document.getElementById("landing-container");
+			(landing || document.body).appendChild(stats);
+		}
+		if (btn && isDev) {
+			btn.classList.add("is-active");
+			btn.setAttribute("aria-pressed", "true");
+		}
+		if (stats) stats.style.display = isDev ? "block" : "none";
+	})();
+
+	// Hero visibility: pause animation & hide overlays when scrolled out
+	if ("IntersectionObserver" in window) {
+		var boidsInfo = document.getElementById("boids-info");
+		var boidsStats = document.getElementById("boids-debug-stats");
+		var heroIo = new IntersectionObserver(function (entries) {
+			entries.forEach(function (entry) {
+				var vis = entry.isIntersecting;
+				setHeroVisible(vis);
+				if (boidsInfo) boidsInfo.classList.toggle("is-hidden", !vis);
+				if (boidsStats) boidsStats.classList.toggle("is-hidden", !vis);
+			});
+		}, { threshold: 0.1 });
+		heroIo.observe(canvas.parentElement);
+	}
+})();
+
+// =============================================================
+// Boids info tooltip
+// =============================================================
+(function () {
+	var btn = document.getElementById("boids-info-btn");
+	var tip = document.getElementById("boids-info-tooltip");
+	if (!btn || !tip) return;
+	var open = false;
+
+	function show() {
+		open = true;
+		tip.classList.add("is-open");
+		tip.setAttribute("aria-hidden", "false");
+		btn.setAttribute("aria-expanded", "true");
+		btn.classList.add("is-active");
+	}
+
+	function hide() {
+		open = false;
+		tip.classList.remove("is-open");
+		tip.setAttribute("aria-hidden", "true");
+		btn.setAttribute("aria-expanded", "false");
+		btn.classList.remove("is-active");
+	}
+
+	btn.addEventListener("click", function (e) {
+		e.stopPropagation();
+		open ? hide() : show();
+	});
+
+	document.addEventListener("keydown", function (e) {
+		if (e.key === "Escape" && open) hide();
+	});
+
+	// Start open on page load
+	show();
+})();
+
+// =============================================================
+// Boids debug mode toggle
+// =============================================================
+(function () {
+	var btn = document.getElementById("boids-debug-btn");
+	if (!btn) return;
+
+	var stats = document.getElementById("boids-debug-stats");
+	if (!stats) {
+		stats = document.createElement("div");
+		stats.id = "boids-debug-stats";
+		var landing = document.getElementById("landing-container");
+		(landing || document.body).appendChild(stats);
+	}
+
+	btn.addEventListener("click", function (e) {
+		e.stopPropagation();
+		document.dispatchEvent(new CustomEvent("boids-debug-toggle"));
 	});
 })();
