@@ -1156,11 +1156,9 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		start();
 	}
 
-	// Debug toggle listener (dev only — attached once, guarded by isDev)
+	// Stats card toggle — shared by the </> button click
 	document.addEventListener("boids-debug-toggle", function () {
-		if (!isDev) return;
 		toggleStats();
-		debugLabelsAlpha = 1;
 		var btn = document.getElementById("boids-debug-btn");
 		var stats = document.getElementById("boids-debug-stats");
 		if (btn) {
@@ -1168,6 +1166,10 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			btn.setAttribute("aria-pressed", String(statsVisible));
 		}
 		if (stats) stats.style.display = statsVisible ? "block" : "none";
+		// Dev-only debug overlay extras
+		if (isDev) {
+			debugLabelsAlpha = 1;
+		}
 	});
 
 	// ── Viewport gate: start on desktop, teardown on mobile ──
