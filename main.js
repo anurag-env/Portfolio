@@ -416,7 +416,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	var running = false;
 	var mouse = null;
 	var heroVisible = true;
-	var statsVisible = true;
+	var statsVisible = false;
 	var initialised = false;
 	var worldWidth = 0;
 	var worldHeight = 0;
@@ -465,7 +465,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		window.location.hostname === "127.0.0.1" ||
 		window.location.protocol === "file:" ||
 		window.location.search.indexOf("debug=true") !== -1;
-	var debugOn = isDev;
+	var debugOn = statsVisible;
 	var debugLabelsAlpha = 1;
 	var fpsFrames = 0;
 	var fpsLast = performance.now();
@@ -894,7 +894,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			}
 		}
 
-		if (!debugOn) return;
+		if (!statsVisible) return;
 
 		focusTimer++;
 		if (focusIdx === -1 || focusTimer >= FOCUS_RESELECT) {
@@ -1006,6 +1006,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 	function toggleStats() {
 		statsVisible = !statsVisible;
+		debugOn = statsVisible;
 		var stats = document.getElementById("boids-debug-stats");
 		var socials = document.getElementById("landing-socials");
 		if (stats) stats.classList.toggle("is-collapsed", !statsVisible);
@@ -1103,10 +1104,28 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				(landing || document.body).appendChild(stats);
 			}
 			if (btn && isDev) {
-				btn.classList.add("is-active");
-				btn.setAttribute("aria-pressed", "true");
+				btn.classList.toggle("is-active", statsVisible);
+				btn.setAttribute("aria-pressed", String(statsVisible));
 			}
-			if (stats) stats.style.display = isDev ? "block" : "none";
+			if (stats) stats.style.display = statsVisible ? "block" : "none";
+
+			// Apply initial collapsed/shifted state on load without triggering transitions
+			if (!statsVisible) {
+				var socials = document.getElementById("landing-socials");
+				if (socials) {
+					socials.style.transition = "none";
+					socials.classList.add("is-shifted");
+				}
+				if (stats) {
+					stats.style.transition = "none";
+					stats.classList.add("is-collapsed");
+				}
+				var s = socials, st = stats;
+				requestAnimationFrame(function () {
+					if (s) s.style.transition = "";
+					if (st) st.style.transition = "";
+				});
+			}
 
 			var resetBtnEl = stats.querySelector(".boids-reset-btn");
 			if (resetBtnEl) {
@@ -1140,16 +1159,15 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	// Debug toggle listener (dev only — attached once, guarded by isDev)
 	document.addEventListener("boids-debug-toggle", function () {
 		if (!isDev) return;
-		debugOn = !debugOn;
+		toggleStats();
 		debugLabelsAlpha = 1;
 		var btn = document.getElementById("boids-debug-btn");
 		var stats = document.getElementById("boids-debug-stats");
 		if (btn) {
-			btn.classList.toggle("is-active", debugOn);
-			btn.setAttribute("aria-pressed", String(debugOn));
+			btn.classList.toggle("is-active", statsVisible);
+			btn.setAttribute("aria-pressed", String(statsVisible));
 		}
-		if (stats) stats.style.display = debugOn ? "block" : "none";
-		toggleStats();
+		if (stats) stats.style.display = statsVisible ? "block" : "none";
 	});
 
 	// ── Viewport gate: start on desktop, teardown on mobile ──
@@ -1219,9 +1237,6 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	document.addEventListener("boids-info-close", function () {
 		if (open) hide();
 	});
-
-	// Start open on page load
-	show();
 })();
 
 // =============================================================

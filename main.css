@@ -63,9 +63,8 @@ a:focus-visible{
 	height: 6px;
 	margin-right: 6px;
 	border-radius: 50%;
-	background: #4ec9a6;
+	background: rgba(78, 201, 166, 0.35);
 	vertical-align: middle;
-	animation: livePulse 2s ease-in-out infinite;
 }
 
 @keyframes livePulse{
@@ -199,6 +198,10 @@ a:focus-visible{
 	padding-bottom: 10px;
 	/* Keep the whole circular control above overlapping hero utility layers. */
 	z-index: 40 !important;
+	pointer-events: none;
+}
+
+#landing-chevron-btn{
 	pointer-events: auto;
 }
 
