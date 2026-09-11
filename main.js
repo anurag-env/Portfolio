@@ -245,32 +245,89 @@ $(window).scroll(function () {
 
 		// Pipeline diagram (skip if empty)
 		if (paper.pipeline && paper.pipeline.length) {
-			var pipeline = document.createElement("div");
-			pipeline.className = "pipeline";
+
+			// Two-column body row: performance | (pipeline + abstract)
+			var bodyRow = document.createElement("div");
+			bodyRow.className = "research-body-row";
+
+			// Column 1: Model performance (narrow, left)
+			if (paper.performance && paper.performance.length) {
+				var perfCol = document.createElement("div");
+				perfCol.className = "research-perf-box";
+				var perfTitle = document.createElement("h3");
+				perfTitle.className = "research-panel-title";
+				perfTitle.textContent = "Model performance";
+				perfCol.appendChild(perfTitle);
+				var perfGrid = document.createElement("div");
+				perfGrid.className = "research-perf-grid";
+				paper.performance.forEach(function (m) {
+					var metric = document.createElement("div");
+					metric.className = "research-perf-metric";
+					var val = document.createElement("span");
+					val.className = "research-perf-value";
+					val.textContent = m.value;
+					metric.appendChild(val);
+					var lbl = document.createElement("span");
+					lbl.className = "research-perf-label";
+					lbl.textContent = m.label;
+					metric.appendChild(lbl);
+					perfGrid.appendChild(metric);
+				});
+				perfCol.appendChild(perfGrid);
+				bodyRow.appendChild(perfCol);
+			}
+
+			// Column 2: Pipeline (top) + Abstract (bottom), stacked vertically
+			var contentCol = document.createElement("div");
+			contentCol.className = "research-body-content";
+
+			// Pipeline (horizontal, top)
+			var pipelineWrap = document.createElement("div");
+			pipelineWrap.className = "research-body-pipeline";
 			paper.pipeline.forEach(function (stage, si) {
-				if (si > 0) {
-					var arrow = document.createElement("span");
-					arrow.className = "pipeline-arrow";
-					arrow.innerHTML = '<i class="fas fa-chevron-right"></i>';
-					pipeline.appendChild(arrow);
-				}
 				var node = document.createElement("div");
-				node.className = "pipeline-node";
+				node.className = "pipeline-node-v";
 				var icon = document.createElement("i");
 				icon.className = stage.icon;
 				node.appendChild(icon);
-				var lbl = document.createElement("span");
-				lbl.textContent = stage.label;
-				node.appendChild(lbl);
-				pipeline.appendChild(node);
+				var textWrap = document.createElement("div");
+				textWrap.className = "pipeline-node-text";
+				var titleEl = document.createElement("span");
+				titleEl.className = "pipeline-node-title";
+				titleEl.textContent = stage.title;
+				textWrap.appendChild(titleEl);
+				if (stage.subtitle) {
+					var sub = document.createElement("span");
+					sub.className = "pipeline-node-sub";
+					sub.textContent = stage.subtitle;
+					textWrap.appendChild(sub);
+				}
+				node.appendChild(textWrap);
+				pipelineWrap.appendChild(node);
+				if (si < paper.pipeline.length - 1) {
+					var arrow = document.createElement("span");
+					arrow.className = "pipeline-arrow-v";
+					arrow.innerHTML = '<i class="fas fa-chevron-right"></i>';
+					pipelineWrap.appendChild(arrow);
+				}
 			});
-			card.appendChild(pipeline);
-		}
+			contentCol.appendChild(pipelineWrap);
 
-		// Abstract
-		if (paper.abstract) {
+			// Abstract (bottom)
+			if (paper.abstract) {
+				var absCol = document.createElement("div");
+				absCol.className = "research-body-abstract";
+				var absP = document.createElement("p");
+				absP.textContent = paper.abstract;
+				absCol.appendChild(absP);
+				contentCol.appendChild(absCol);
+			}
+
+			bodyRow.appendChild(contentCol);
+			card.appendChild(bodyRow);
+		} else if (paper.abstract) {
 			var absWrap = document.createElement("div");
-			absWrap.className = "pub-abstract";
+			absWrap.className = "research-body-abstract";
 			var absP = document.createElement("p");
 			absP.textContent = paper.abstract;
 			absWrap.appendChild(absP);
@@ -1186,28 +1243,4 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		e.stopPropagation();
 		document.dispatchEvent(new CustomEvent("boids-debug-toggle"));
 	});
-})();
-
-// =============================================================
-// Last pushed — reads static date injected by build script.
-// The date placeholder is replaced by update-date.sh before deploy.
-// =============================================================
-(function () {
-	var el = document.getElementById("last-pushed");
-	if (!el) return;
-
-	fetch("https://api.github.com/repos/anurag-env/Portfolio/commits?per_page=1")
-		.then(function (res) {
-			if (!res.ok) throw new Error("API error");
-			return res.json();
-		})
-		.then(function (data) {
-			if (!Array.isArray(data) || !data[0]) throw new Error("No data");
-			var date = new Date(data[0].commit.committer.date);
-			var formatted = date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-			el.querySelector("#last-pushed-text").textContent = "Live Updated: " + formatted + " (Last Push Date)";
-		})
-		.catch(function () {
-			// Fallback: the static date in index.html will remain as-is
-		});
 })();
