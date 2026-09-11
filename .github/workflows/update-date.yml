@@ -1,0 +1,28 @@
+name: Update Last Pushed Date
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  update-date:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update date in index.html
+        run: |
+          DATE=$(git log -1 --format="%ci" | awk '{print $1}')
+          FORMATTED=$(date -d "$DATE" '+%b %d, %Y')
+          sed -i "s|<!--LAST_PUSHED_DATE-->[^<]*<!--/LAST_PUSHED_DATE-->|<!--LAST_PUSHED_DATE-->$FORMATTED<!--/LAST_PUSHED_DATE-->|g" index.html
+          echo "Updated to: $FORMATTED"
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "chore: update last pushed date [skip ci]"
+          git push

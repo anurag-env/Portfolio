@@ -3,6 +3,7 @@
 // =============================================================
 $(document).ready(function () {
 	$("#landing-chevron-btn").click(function () {
+		document.dispatchEvent(new CustomEvent("boids-info-close"));
 		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
 			$("html,body").animate({ scrollTop: $("#details-container").offset().top }, "slow");
 			return;
@@ -25,10 +26,10 @@ $(window).scroll(function () {
 	$("#landing-footer").css("opacity", opac1);
 	$("#landing-cta").css("opacity", opac1);
 	$("#landing-socials").css("opacity", opac1);
-	$("#boids-debug-btn").css("opacity", opac1);
-	$("#boids-info-btn").css("opacity", opac1);
-	$("#boids-info-tooltip").css("opacity", opac1);
-	$("#boids-debug-stats").css("opacity", opac1);
+	var boidsInfo = document.getElementById("boids-info");
+	var boidsStats = document.getElementById("boids-debug-stats");
+	if (boidsInfo) boidsInfo.style.setProperty("--boids-scroll-opacity", opac1);
+	if (boidsStats) boidsStats.style.setProperty("--boids-scroll-opacity", opac1);
 });
 
 // =============================================================
@@ -46,6 +47,8 @@ $(window).scroll(function () {
 //     you scroll back up).
 // =============================================================
 (function () {
+	// Desktop uses an opaque canvas; retain the image cross-fade only for mobile.
+	if (!window.matchMedia("(max-width: 900px)").matches) return;
 	var images = window.__landingImages;
 	var startIdx = typeof window.__landingInitialIdx === "number" ? window.__landingInitialIdx : 0;
 	if (!images || images.length === 0) return;
@@ -358,18 +361,25 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	var heroVisible = true;
 	var statsVisible = true;
 	var initialised = false;
+	var worldWidth = 0;
+	var worldHeight = 0;
+	var pixelRatio = 1;
+	var introStartedAt = 0;
 
 	// Stored listener references for clean removal
-	var onMouseMove, onMouseLeave, onResize, onVisibilityChange;
+	var onMouseMove, onMouseLeave, onPointerDown, onPointerUp, onResize, onVisibilityChange;
 
 	// --- Flock config ---
 	var FLOCK_COUNT = 4;
 	var BOIDS_PER = 25;
-	var FEAR_RADIUS = 110;
+	var FEAR_RADIUS = 120;
+	var INTERACT_RADIUS = 210;
 	var DENSITY_RADIUS = 40;
 	var DENSITY_LIMIT = 12;
 	var DENSITY_FORCE = 0.06;
 	var EXPLORE_INTERVAL = 720;
+	var MAX_VISIBLE_GROUPS = 10;
+	var GROUP_CHECK_INTERVAL = 30;
 
 	// --- Boid behaviour ---
 	var SEP_RADIUS = 22;
@@ -379,13 +389,19 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	var WALIGN = 1.0;
 	var WCOH = 0.3;
 	var WGOAL = 0.005;
-	var WFLEE = 4.5;
+	var WFLEE = 0.32;
+	var WATTRACT = 0.052;
+	var WVORTEX = 0.022;
+	var RALLY_SPEED = 1.42;
 	var WDRIFT = 0.003;
+	var WREGROUP = 0.38;
 	var MAX_SPEED = 1.1;
 	var MAX_FORCE = 0.04;
 	var GOAL_SPEED = 0.15;
+	var INTRO_DURATION = 1150;
 	var driftAngle = Math.random() * Math.PI * 2;
 	var frameCount = 0;
+	var regroupTargets = [];
 
 	// --- Debug mode ---
 	var isDev = window.location.hostname === "localhost" ||
@@ -412,8 +428,13 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	}
 
 	function resize() {
-		canvas.width = canvas.offsetWidth;
-		canvas.height = canvas.offsetHeight;
+		var rect = canvas.getBoundingClientRect();
+		worldWidth = rect.width;
+		worldHeight = rect.height;
+		pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+		canvas.width = Math.round(worldWidth * pixelRatio);
+		canvas.height = Math.round(worldHeight * pixelRatio);
+		ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 	}
 
 	function hslToRgb(h, s, l) {
@@ -434,10 +455,11 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 	function createBoids() {
 		boids = [];
 		flocks = [];
+		regroupTargets = [];
 		var pad = 80;
 		var cols = 2, rows = 2;
-		var zoneW = (canvas.width - pad * 2) / cols;
-		var zoneH = (canvas.height - pad * 2) / rows;
+		var zoneW = (worldWidth - pad * 2) / cols;
+		var zoneH = (worldHeight - pad * 2) / rows;
 		for (var f = 0; f < FLOCK_COUNT; f++) {
 			var col = f % cols;
 			var row = Math.floor(f / cols);
@@ -454,15 +476,24 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			var lit = 55 + Math.random() * 10;
 			for (var i = 0; i < BOIDS_PER; i++) {
 				var angle = Math.random() * Math.PI * 2;
-				var spd = MAX_SPEED * (0.7 + Math.random() * 0.3);
+				var depth = Math.random();
+				var maxSpeed = MAX_SPEED * (0.78 + depth * 0.34);
+				var spd = maxSpeed * (0.7 + Math.random() * 0.3);
 				var h = (baseHue + (Math.random() - 0.5) * 24 + 360) % 360;
+				var homeX = gx + (Math.random() - 0.5) * 40;
+				var homeY = gy + (Math.random() - 0.5) * 40;
+				var edge = f % 4;
+				var startX = edge === 0 ? -30 : edge === 1 ? worldWidth + 30 : Math.random() * worldWidth;
+				var startY = edge === 2 ? -30 : edge === 3 ? worldHeight + 30 : Math.random() * worldHeight;
 				boids.push({
-					x: gx + (Math.random() - 0.5) * 40,
-					y: gy + (Math.random() - 0.5) * 40,
+					x: startX, y: startY,
 					vx: Math.cos(angle) * spd,
 					vy: Math.sin(angle) * spd,
-					size: 4.5 + Math.random() * 3,
-					opacity: 0.45 + Math.random() * 0.25,
+					homeX: homeX, homeY: homeY, startX: startX, startY: startY,
+					introDelay: f * 150 + Math.random() * 360,
+					depth: depth, maxSpeed: maxSpeed,
+					size: 3.8 + depth * 4.1,
+					opacity: 0.26 + depth * 0.46,
 					flock: f,
 					color: "hsl(" + h + "," + sat + "%," + lit + "%)",
 					colorRGB: hslToRgb(h, sat, lit)
@@ -477,32 +508,68 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		return [ax, ay];
 	}
 
+	function refreshRegroupTargets() {
+		regroupTargets = [];
+		var clusters = detectClusters().members;
+		if (clusters.length <= MAX_VISIBLE_GROUPS) return;
+
+		clusters.sort(function (a, b) { return b.members.length - a.members.length; });
+		var established = clusters.slice(0, MAX_VISIBLE_GROUPS);
+		for (var i = MAX_VISIBLE_GROUPS; i < clusters.length; i++) {
+			var fragment = clusters[i];
+			var nearest = established[0];
+			var nearestDistance = Infinity;
+			for (var j = 0; j < established.length; j++) {
+				var dx = fragment.x - established[j].x;
+				var dy = fragment.y - established[j].y;
+				var distance = dx * dx + dy * dy;
+				if (distance < nearestDistance) { nearestDistance = distance; nearest = established[j]; }
+			}
+			for (var k = 0; k < fragment.members.length; k++) {
+				regroupTargets[fragment.members[k]] = nearest;
+			}
+		}
+	}
+
 	function update() {
 		frameCount++;
 		driftAngle += (Math.random() - 0.5) * 0.02;
+		var introElapsed = performance.now() - introStartedAt;
+		var introComplete = introElapsed >= INTRO_DURATION + 810;
+		if (introComplete && frameCount % GROUP_CHECK_INTERVAL === 0) refreshRegroupTargets();
 
 		for (var f = 0; f < flocks.length; f++) {
 			var g = flocks[f];
+			if (!introComplete) continue;
 			g.exploreTimer++;
 			if (g.exploreTimer >= EXPLORE_INTERVAL) {
 				g.exploreTimer = 0;
-				g.targetX = 80 + Math.random() * (canvas.width - 160);
-				g.targetY = 80 + Math.random() * (canvas.height - 160);
+				g.targetX = 80 + Math.random() * (worldWidth - 160);
+				g.targetY = 80 + Math.random() * (worldHeight - 160);
 			} else {
 				g.wanderAngle += (Math.random() - 0.5) * 0.6;
 				g.targetX += Math.cos(g.wanderAngle) * GOAL_SPEED;
 				g.targetY += Math.sin(g.wanderAngle) * GOAL_SPEED;
 			}
-			if (g.targetX < -50) g.targetX = canvas.width * 0.5;
-			if (g.targetX > canvas.width + 50) g.targetX = canvas.width * 0.5;
-			if (g.targetY < -50) g.targetY = canvas.height * 0.5;
-			if (g.targetY > canvas.height + 50) g.targetY = canvas.height * 0.5;
+			if (g.targetX < -50) g.targetX = worldWidth * 0.5;
+			if (g.targetX > worldWidth + 50) g.targetX = worldWidth * 0.5;
+			if (g.targetY < -50) g.targetY = worldHeight * 0.5;
+			if (g.targetY > worldHeight + 50) g.targetY = worldHeight * 0.5;
 			g.goalX += (g.targetX - g.goalX) * 0.005;
 			g.goalY += (g.targetY - g.goalY) * 0.005;
 		}
 
 		for (var i = 0; i < boids.length; i++) {
 			var b = boids[i];
+			var introProgress = Math.max(0, Math.min(1, (introElapsed - b.introDelay) / INTRO_DURATION));
+			if (introProgress < 1) {
+				var eased = 1 - Math.pow(1 - introProgress, 3);
+				b.x = b.startX + (b.homeX - b.startX) * eased;
+				b.y = b.startY + (b.homeY - b.startY) * eased;
+				b.vx = (b.homeX - b.startX) / INTRO_DURATION * 16;
+				b.vy = (b.homeY - b.startY) / INTRO_DURATION * 16;
+				continue;
+			}
 			var sx = 0, sy = 0, sc = 0;
 			var ax = 0, ay = 0, ac = 0;
 			var cx = 0, cy = 0, cc = 0;
@@ -528,7 +595,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			if (sc > 0) {
 				sx /= sc; sy /= sc;
 				var sm = Math.sqrt(sx * sx + sy * sy);
-				if (sm > 0) { sx = (sx / sm) * MAX_SPEED - b.vx; sy = (sy / sm) * MAX_SPEED - b.vy; }
+				if (sm > 0) { sx = (sx / sm) * b.maxSpeed - b.vx; sy = (sy / sm) * b.maxSpeed - b.vy; }
 				var sl = limit(sx, sy, MAX_FORCE);
 				fx += sl[0] * WSEP; fy += sl[1] * WSEP;
 			}
@@ -557,7 +624,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			if (ac > 0) {
 				ax /= ac; ay /= ac;
 				var am = Math.sqrt(ax * ax + ay * ay);
-				if (am > 0) { ax = (ax / am) * MAX_SPEED - b.vx; ay = (ay / am) * MAX_SPEED - b.vy; }
+				if (am > 0) { ax = (ax / am) * b.maxSpeed - b.vx; ay = (ay / am) * b.maxSpeed - b.vy; }
 				var al = limit(ax, ay, MAX_FORCE);
 				fx += al[0] * WALIGN; fy += al[1] * WALIGN;
 			}
@@ -565,7 +632,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			if (cc > 0) {
 				cx = cx / cc - b.x; cy = cy / cc - b.y;
 				var cm = Math.sqrt(cx * cx + cy * cy);
-				if (cm > 0) { cx = (cx / cm) * MAX_SPEED - b.vx; cy = (cy / cm) * MAX_SPEED - b.vy; }
+				if (cm > 0) { cx = (cx / cm) * b.maxSpeed - b.vx; cy = (cy / cm) * b.maxSpeed - b.vy; }
 				var cl = limit(cx, cy, MAX_FORCE);
 				fx += cl[0] * WCOH; fy += cl[1] * WCOH;
 			}
@@ -575,10 +642,25 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			var gdy = fg.goalY - b.y;
 			var gd = Math.sqrt(gdx * gdx + gdy * gdy);
 			if (gd > 1) {
-				var gSteerX = (gdx / gd) * MAX_SPEED - b.vx;
-				var gSteerY = (gdy / gd) * MAX_SPEED - b.vy;
+				var gSteerX = (gdx / gd) * b.maxSpeed - b.vx;
+				var gSteerY = (gdy / gd) * b.maxSpeed - b.vy;
 				var gl = limit(gSteerX, gSteerY, MAX_FORCE);
 				fx += gl[0] * WGOAL; fy += gl[1] * WGOAL;
+			}
+
+			// If the scene has fragmented beyond its ten-group ceiling, gently
+			// rejoin only the excess fragments to their nearest established group.
+			var regroup = regroupTargets[i];
+			if (regroup) {
+				var rdx = regroup.x - b.x;
+				var rdy = regroup.y - b.y;
+				var rd = Math.sqrt(rdx * rdx + rdy * rdy);
+				if (rd > 1) {
+					var regroupX = (rdx / rd) * b.maxSpeed - b.vx;
+					var regroupY = (rdy / rd) * b.maxSpeed - b.vy;
+					var rl = limit(regroupX, regroupY, MAX_FORCE);
+					fx += rl[0] * WREGROUP; fy += rl[1] * WREGROUP;
+				}
 			}
 
 			fx += Math.cos(driftAngle) * WDRIFT;
@@ -588,7 +670,18 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 				var mdx = b.x - mouse.x;
 				var mdy = b.y - mouse.y;
 				var md = Math.sqrt(mdx * mdx + mdy * mdy);
-				if (md < FEAR_RADIUS && md > 0) {
+				if (mouse.down && md > 0) {
+					// Holding the pointer becomes a global rally point: distant flocks
+					// turn decisively toward it, then settle into a small orbit on arrival.
+					var pull = WATTRACT * (0.45 + 0.55 * Math.min(md / INTERACT_RADIUS, 1));
+					fx -= (mdx / md) * pull;
+					fy -= (mdy / md) * pull;
+					if (md < INTERACT_RADIUS) {
+						// A very small tangential force makes the gathered flock feel alive.
+						fx += (-mdy / md) * WVORTEX * (1 - md / INTERACT_RADIUS);
+						fy += (mdx / md) * WVORTEX * (1 - md / INTERACT_RADIUS);
+					}
+				} else if (md < FEAR_RADIUS && md > 0) {
 					var strength = (1 - md / FEAR_RADIUS) * WFLEE;
 					fx += (mdx / md) * strength;
 					fy += (mdy / md) * strength;
@@ -597,7 +690,8 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 			b.vx += fx; b.vy += fy;
 			var spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-			if (spd > MAX_SPEED) { b.vx = (b.vx / spd) * MAX_SPEED; b.vy = (b.vy / spd) * MAX_SPEED; }
+			var speedLimit = mouse && mouse.down ? b.maxSpeed * RALLY_SPEED : b.maxSpeed;
+			if (spd > speedLimit) { b.vx = (b.vx / spd) * speedLimit; b.vy = (b.vy / spd) * speedLimit; }
 
 			if (Math.random() < 0.003) {
 				b.vx += (Math.random() - 0.5) * 0.15;
@@ -606,16 +700,16 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 			b.x += b.vx; b.y += b.vy;
 
-			if (b.x < -8) b.x = canvas.width + 8;
-			else if (b.x > canvas.width + 8) b.x = -8;
-			if (b.y < -8) b.y = canvas.height + 8;
-			else if (b.y > canvas.height + 8) b.y = -8;
+			if (b.x < -8) b.x = worldWidth + 8;
+			else if (b.x > worldWidth + 8) b.x = -8;
+			if (b.y < -8) b.y = worldHeight + 8;
+			else if (b.y > worldHeight + 8) b.y = -8;
 		}
 	}
 
 	function draw() {
 		ctx.fillStyle = "#0d0d0d";
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		ctx.fillRect(0, 0, worldWidth, worldHeight);
 
 		for (var i = 0; i < boids.length; i++) {
 			var b = boids[i];
@@ -626,6 +720,10 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 			ctx.save();
 			ctx.translate(b.x, b.y);
 			ctx.rotate(angle);
+			if (b.depth > 0.78) {
+				ctx.shadowColor = "rgba(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ",0.45)";
+				ctx.shadowBlur = 5 + b.depth * 5;
+			}
 			ctx.beginPath();
 			ctx.moveTo(s * 2, 0);
 			ctx.lineTo(-s, -s * 0.65);
@@ -670,15 +768,18 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 		var visited = [];
 		var clusterSizes = [];
+		var clusters = [];
 
 		for (var i = 0; i < n; i++) {
 			if (visited[i] || pointType[i] !== CORE) continue;
 			var size = 0;
+			var members = [];
 			var queue = [i];
 			visited[i] = true;
 			while (queue.length > 0) {
 				var cur = queue.shift();
 				size++;
+				members.push(cur);
 				if (pointType[cur] === NOISE) continue;
 				for (var k = 0; k < neighbors[cur].length; k++) {
 					var nb = neighbors[cur][k];
@@ -688,15 +789,26 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 					}
 				}
 			}
-			if (size > 0) clusterSizes.push(size);
+			if (size > 0) {
+				var totalX = 0, totalY = 0;
+				for (var m = 0; m < members.length; m++) {
+					totalX += boids[members[m]].x;
+					totalY += boids[members[m]].y;
+				}
+				clusters.push({ members: members, x: totalX / members.length, y: totalY / members.length });
+				clusterSizes.push(size);
+			}
 		}
 
 		for (var i = 0; i < n; i++) {
-			if (!visited[i]) clusterSizes.push(1);
+			if (!visited[i]) {
+				clusters.push({ members: [i], x: boids[i].x, y: boids[i].y });
+				clusterSizes.push(1);
+			}
 		}
 
 		clusterSizes.sort(function (a, b) { return a - b; });
-		return { count: clusterSizes.length, sizes: clusterSizes };
+		return { count: clusterSizes.length, sizes: clusterSizes, members: clusters };
 	}
 
 	function drawDebug() {
@@ -830,6 +942,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		statsLast = 0;
 		driftAngle = Math.random() * Math.PI * 2;
 		resize();
+		introStartedAt = performance.now();
 		createBoids();
 		start();
 	}
@@ -849,6 +962,8 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		flocks = [];
 		if (onMouseMove) { window.removeEventListener("mousemove", onMouseMove); onMouseMove = null; }
 		if (onMouseLeave) { window.removeEventListener("mouseleave", onMouseLeave); onMouseLeave = null; }
+		if (onPointerDown) { window.removeEventListener("pointerdown", onPointerDown); onPointerDown = null; }
+		if (onPointerUp) { window.removeEventListener("pointerup", onPointerUp); onPointerUp = null; }
 		if (onResize) { window.removeEventListener("resize", onResize); onResize = null; }
 		if (onVisibilityChange) { document.removeEventListener("visibilitychange", onVisibilityChange); onVisibilityChange = null; }
 		if (heroIo) { heroIo.disconnect(); heroIo = null; }
@@ -865,11 +980,27 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
 		resize();
+		introStartedAt = performance.now();
 		createBoids();
 
-		onMouseMove = function (e) { mouse = { x: e.clientX, y: e.clientY }; };
+		function setMousePosition(e) {
+			var rect = canvas.getBoundingClientRect();
+			if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return false;
+			mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top, down: mouse && mouse.down };
+			return true;
+		}
+		onMouseMove = function (e) { setMousePosition(e); };
 		onMouseLeave = function () { mouse = null; };
-		onResize = function () { resize(); createBoids(); };
+		onPointerDown = function (e) {
+			if (e.target.closest("a, button, input, textarea, select")) return;
+			if (setMousePosition(e) && mouse) mouse.down = true;
+		};
+		onPointerUp = function () { if (mouse) mouse.down = false; };
+		onResize = function () {
+			resize();
+			introStartedAt = performance.now();
+			createBoids();
+		};
 		onVisibilityChange = function () {
 			if (document.hidden) stop();
 			else { resize(); start(); }
@@ -877,6 +1008,8 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 		window.addEventListener("mousemove", onMouseMove);
 		window.addEventListener("mouseleave", onMouseLeave);
+		window.addEventListener("pointerdown", onPointerDown);
+		window.addEventListener("pointerup", onPointerUp);
 		window.addEventListener("resize", onResize);
 		document.addEventListener("visibilitychange", onVisibilityChange);
 
@@ -938,8 +1071,9 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 					setHeroVisible(vis);
 					if (boidsInfo) boidsInfo.classList.toggle("is-hidden", !vis);
 					if (boidsStats) boidsStats.classList.toggle("is-hidden", !vis);
+					if (!vis) document.dispatchEvent(new CustomEvent("boids-info-close"));
 				});
-			}, { threshold: 0.1 });
+			}, { threshold: 0 });
 			heroIo.observe(canvas.parentElement);
 		}
 
@@ -1024,6 +1158,11 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		if (e.key === "Escape" && open) hide();
 	});
 
+	// Leaving the hero dismisses the card; returning leaves the choice to the visitor.
+	document.addEventListener("boids-info-close", function () {
+		if (open) hide();
+	});
+
 	// Start open on page load
 	show();
 })();
@@ -1047,4 +1186,28 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 		e.stopPropagation();
 		document.dispatchEvent(new CustomEvent("boids-debug-toggle"));
 	});
+})();
+
+// =============================================================
+// Last pushed — reads static date injected by build script.
+// The date placeholder is replaced by update-date.sh before deploy.
+// =============================================================
+(function () {
+	var el = document.getElementById("last-pushed");
+	if (!el) return;
+
+	fetch("https://api.github.com/repos/anurag-env/Portfolio/commits?per_page=1")
+		.then(function (res) {
+			if (!res.ok) throw new Error("API error");
+			return res.json();
+		})
+		.then(function (data) {
+			if (!Array.isArray(data) || !data[0]) throw new Error("No data");
+			var date = new Date(data[0].commit.committer.date);
+			var formatted = date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+			el.querySelector("#last-pushed-text").textContent = "Live Updated: " + formatted + " (Last Push Date)";
+		})
+		.catch(function () {
+			// Fallback: the static date in index.html will remain as-is
+		});
 })();

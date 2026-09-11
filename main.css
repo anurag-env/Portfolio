@@ -47,6 +47,7 @@ a:focus-visible{
 
 /* Two-layer cross-fade. JS toggles opacity to swap. */
 .landing-bg{
+	display: none;
 	position: absolute;
 	inset: 0;
 	background-size: cover;
@@ -58,13 +59,11 @@ a:focus-visible{
 }
 
 .landing-bg-a{ opacity: 1; }
-.landing-bg-b{
-	opacity: 0;
-	background-image: url(./images/hero1.jpg); /* fallback for the second layer */
-}
+.landing-bg-b{ opacity: 0; }
 
 /* Dark gradient overlay sits above the bg layers, below the content */
 .landing-overlay{
+	display: none;
 	position: absolute;
 	inset: 0;
 	background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.6) 100%);
@@ -117,6 +116,11 @@ a:focus-visible{
     background-color: rgba(0, 0, 0, 0.6);
 }
 
+@media (max-width: 900px){
+	.landing-bg,
+	.landing-overlay{ display: block; }
+}
+
 #landing-container .landing-content{
 	position: absolute;
 	z-index: 30;
@@ -159,6 +163,9 @@ a:focus-visible{
 #landing-footer{
 	bottom: 4vh;
 	padding-bottom: 10px;
+	/* Keep the whole circular control above overlapping hero utility layers. */
+	z-index: 40 !important;
+	pointer-events: auto;
 }
 
 #landing-cta{
@@ -368,6 +375,28 @@ a:focus-visible{
 #theme-toggle[data-tooltip]:hover::after,
 #theme-toggle[data-tooltip]:focus-visible::after{
   opacity: 1;
+}
+
+/* ── Last pushed badge ── */
+.last-pushed{
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 100;
+  color: #6b7280;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  transition: color 0.3s ease;
+}
+
+body.dark-mode .last-pushed{
+  color: #9ca3af;
+}
+
+@media (max-width: 900px){
+  .last-pushed{
+    display: none;
+  }
 }
 
 /* ── Dark mode ── */
@@ -2300,11 +2329,12 @@ ol.timeline::before{
    Mobile responsive
    ============================================================ */
 @media (max-width: 900px){
-	/* Boids simulation: hide canvas, show fallback on mobile */
+	/* Boids simulation is desktop-only; leave mobile hero photos unobstructed. */
 	#boids-canvas{ display: none !important; }
-	.boids-fallback{ display: block; }
+	.boids-fallback{ display: none !important; }
 	#boids-info{ display: none !important; }
 	#boids-debug-stats{ display: none !important; }
+	#boids-interaction-hint{ display: none !important; }
 
 	/* Hide the sidebar entirely; main content takes the full width */
 	#details-container > .col-2{
@@ -2511,7 +2541,23 @@ ol.timeline::before{
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	opacity: var(--boids-scroll-opacity, 1);
 	transition: opacity 0.3s ease;
+}
+
+#boids-interaction-hint{
+	position: absolute;
+	top: 24px;
+	left: 24px;
+	margin: 0;
+	z-index: 100;
+	font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+	font-size: 10px;
+	line-height: 1.55;
+	letter-spacing: 0.02em;
+	color: rgba(255,255,255,0.38);
+	text-align: left;
+	pointer-events: none;
 }
 
 #boids-info.is-hidden{
@@ -2590,6 +2636,7 @@ ol.timeline::before{
 	line-height: 1.6;
 	color: rgba(255,255,255,0.7);
 	display: none;
+	opacity: var(--boids-scroll-opacity, 1);
 	transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
