@@ -2445,6 +2445,10 @@ ol.timeline::before{
 	#boids-debug-stats{ display: none !important; }
 	#boids-interaction-hint{ display: none !important; }
 
+	/* The "View Live" link on the flocking-simulation project card jumps to
+	   the hero canvas, which is disabled on mobile — hide the link there. */
+	.project-live-link{ display: none !important; }
+
 	/* Use dynamic viewport height so the hero doesn't shift when the
 	   mobile browser address bar collapses / expands during scroll. */
 	#landing-container{ height: 100dvh; }
@@ -2506,7 +2510,7 @@ ol.timeline::before{
 
 	#landing-footer{
 		top: auto;
-		bottom: 8vh;
+		bottom: 12vh;
 		left: 50%;
 		right: auto;
 		transform: translateX(-50%);

@@ -449,7 +449,7 @@ document.querySelectorAll(".project-card a").forEach(function (link) {
 
 	// --- Flock config ---
 	var FLOCK_COUNT = 4;
-	var BOIDS_PER = 25;
+	var BOIDS_PER = 64;
 	var FEAR_RADIUS = 120;
 	var INTERACT_RADIUS = 210;
 	var DENSITY_RADIUS = 40;
