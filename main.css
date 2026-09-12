@@ -2506,7 +2506,7 @@ ol.timeline::before{
 
 	#landing-footer{
 		top: auto;
-		bottom: 12vh;
+		bottom: 8vh;
 		left: 50%;
 		right: auto;
 		transform: translateX(-50%);
