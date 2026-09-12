@@ -2452,6 +2452,10 @@ ol.timeline::before{
 	#boids-debug-stats{ display: none !important; }
 	#boids-interaction-hint{ display: none !important; }
 
+	/* Use dynamic viewport height so the hero doesn't shift when the
+	   mobile browser address bar collapses / expands during scroll. */
+	#landing-container{ height: 100dvh; }
+
 	/* Hide the sidebar entirely; main content takes the full width */
 	#details-container > .col-2{
 		display: none;
@@ -2469,7 +2473,7 @@ ol.timeline::before{
 	   Content group (title + buttons + socials) centered at 50vh. */
 
 	#landing-header{
-		top: 60%;
+		top: 55%;
 		left: 0;
 		right: 0;
 		bottom: auto;
@@ -2478,7 +2482,7 @@ ol.timeline::before{
 	}
 
 	#landing-cta{
-		top: calc(60% + 80px);
+		top: calc(55% + 80px);
 		left: 50%;
 		right: auto;
 		bottom: auto;
@@ -2493,7 +2497,7 @@ ol.timeline::before{
 	}
 
 	#landing-socials{
-		top: calc(60% + 140px);
+		top: calc(55% + 140px);
 		left: 50%;
 		right: auto;
 		bottom: auto;
@@ -2507,7 +2511,7 @@ ol.timeline::before{
 
 	#landing-footer{
 		top: auto;
-		bottom: 4vh;
+		bottom: 12vh;
 		left: 50%;
 		right: auto;
 		transform: translateX(-50%);

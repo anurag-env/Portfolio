@@ -4,15 +4,20 @@
 $(document).ready(function () {
 	$("#landing-chevron-btn").click(function () {
 		document.dispatchEvent(new CustomEvent("boids-info-close"));
+		var targetTop = $("#details-container").offset().top;
 		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-			$("html,body").animate({ scrollTop: $("#details-container").offset().top }, "slow");
+			$("html,body").animate({ scrollTop: targetTop }, "slow");
 			return;
 		}
 		var $hero = $("#landing-container");
+		var $body = document.body;
+		var prevSnap = $body.style.scrollSnapType;
+		$body.style.scrollSnapType = "none";
 		$hero.addClass("hero-lift");
 		setTimeout(function () {
-			$("html,body").animate({ scrollTop: $("#details-container").offset().top }, "slow", function () {
+			$("html,body").animate({ scrollTop: targetTop }, "slow", function () {
 				$hero.removeClass("hero-lift");
+				$body.style.scrollSnapType = prevSnap;
 			});
 		}, 200);
 	});
