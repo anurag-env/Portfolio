@@ -5,14 +5,13 @@
 }
 
 html{
-	scroll-behavior: smooth;
+	scroll-behavior: auto;
 }
 
 body{
 	font-family: "stix", -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	scroll-snap-type: y proximity;
 	color: #1f1f1f;
 }
 
@@ -248,12 +247,6 @@ a:focus-visible{
 	color: #ffffff;
 	transform: translateY(-2px);
 	outline: none;
-}
-
-.hero-lift{
-	transform: translateY(-14px);
-	transition: transform 0.2s ease-out;
-	will-change: transform;
 }
 
 .landing-cta-group{
@@ -2455,6 +2448,8 @@ ol.timeline::before{
 	/* Use dynamic viewport height so the hero doesn't shift when the
 	   mobile browser address bar collapses / expands during scroll. */
 	#landing-container{ height: 100dvh; }
+	#landing-overlay{ height: 100dvh; }
+	#details-container{ min-height: 100dvh; }
 
 	/* Hide the sidebar entirely; main content takes the full width */
 	#details-container > .col-2{

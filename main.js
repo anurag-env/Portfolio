@@ -1,29 +1,45 @@
 // =============================================================
 // Nav scroll-down chevron + landing fade-out as user scrolls
 // =============================================================
+var _isProgrammaticScroll = false;
+
+function _smoothScrollTo(target, duration, onDone) {
+	var el = document.scrollingElement || document.documentElement;
+	var start = el.scrollTop;
+	var dist = target - start;
+	if (dist === 0) { if (onDone) onDone(); return; }
+	var t0 = null;
+	function step(ts) {
+		if (!t0) t0 = ts;
+		var p = Math.min((ts - t0) / duration, 1);
+		var ease = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+		el.scrollTop = start + dist * ease;
+		if (p < 1) { requestAnimationFrame(step); }
+		else { if (onDone) onDone(); }
+	}
+	requestAnimationFrame(step);
+}
+
 $(document).ready(function () {
 	$("#landing-chevron-btn").click(function () {
 		document.dispatchEvent(new CustomEvent("boids-info-close"));
 		var targetTop = $("#details-container").offset().top;
 		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-			$("html,body").animate({ scrollTop: targetTop }, "slow");
+			_isProgrammaticScroll = true;
+			$("html,body").animate({ scrollTop: targetTop }, "slow", function () {
+				_isProgrammaticScroll = false;
+			});
 			return;
 		}
-		var $hero = $("#landing-container");
-		var $body = document.body;
-		var prevSnap = $body.style.scrollSnapType;
-		$body.style.scrollSnapType = "none";
-		$hero.addClass("hero-lift");
-		setTimeout(function () {
-			$("html,body").animate({ scrollTop: targetTop }, "slow", function () {
-				$hero.removeClass("hero-lift");
-				$body.style.scrollSnapType = prevSnap;
-			});
-		}, 200);
+		_isProgrammaticScroll = true;
+		_smoothScrollTo(targetTop, 600, function () {
+			_isProgrammaticScroll = false;
+		});
 	});
 });
 
 $(window).scroll(function () {
+	if (_isProgrammaticScroll) return;
 	var opac1 = ($("#heading-name").offset().top - $(window).scrollTop() + 50) / ($("#heading-name").offset().top + 50);
 	if (opac1 < 0) opac1 = 0;
 	$("#heading-name").css("opacity", opac1);
