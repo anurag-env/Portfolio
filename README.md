@@ -1,7 +1,7 @@
 # Anurag Singh — Portfolio Website
 
 Personal portfolio site for **Anurag Singh**, an AI/ML Engineer and NLP researcher.
-Live at: **[anurag-env.github.io](https://anurag-env.github.io/Portfolio)**
+Live at: **[anurag-env.github.io/Portfolio](https://anurag-env.github.io/Portfolio)**
 
 Built from scratch with vanilla HTML/CSS/JS (plus jQuery and Bootstrap for layout) —
 no frontend framework, no build step. The hero background is a custom real-time
